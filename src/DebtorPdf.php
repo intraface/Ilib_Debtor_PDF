@@ -262,7 +262,6 @@ class DebtorPdf
             }
 
             $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get("right_margin_position"), $this->doc->get('y'));
-
         }
 
         if (!isset($parameter['payment_online'])) {
