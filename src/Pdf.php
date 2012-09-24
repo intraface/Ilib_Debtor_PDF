@@ -1,8 +1,28 @@
 <?php
 /**
- * PdfMaker for Intraface
+ * PDF maker for Intraface
  *
- * @author Sune Jensen <sj@sunet.dk>
+ * PHP version 5
+ *
+ * @category Ilib_Debtor_Reports
+ * @package  Intraface_Debtor
+ * @author   Lars Olesen <lars@legestue.net>
+ * @author   Sune Jensen <sj@sunet.dk>
+ * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link     http://github.com/intraface/Ilib_Debtor_Pdf
+ */
+
+/**
+ * PDF maker for Intraface
+ *
+ * PHP version 5
+ *
+ * @category Ilib_Debtor_Reports
+ * @package  Intraface_Debtor
+ * @author   Lars Olesen <lars@legestue.net>
+ * @author   Sune Jensen <sj@sunet.dk>
+ * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 class Intraface_Pdf extends Document_Cpdf
 {
@@ -11,6 +31,9 @@ class Intraface_Pdf extends Document_Cpdf
     protected $page_height;
     protected $page_width;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->page_width = 595;
@@ -59,7 +82,7 @@ class Intraface_Pdf extends Document_Cpdf
      *
      * @return void
      */
-    private function calculateDynamicValues()
+    private function _calculateDynamicValues()
     {
         // Sets values based on the predefined values.
         $this->value['right_margin_position'] = $this->page_width - $this->value['margin_right']; // content_width from 0 to right margen        
@@ -88,7 +111,7 @@ class Intraface_Pdf extends Document_Cpdf
         $this->value[$key] = $value;
         // Every time we change a fixed value we need to update the dynamic values
         if (in_array($key, array('margin_right', 'margin_left', 'margin_top', 'margin_bottom', 'font_size', 'font_padding_top', 'font_padding_bottom'))) {
-            $this->calculateDynamicValues();
+            $this->_calculateDynamicValues();
         }
     }
 
@@ -155,14 +178,14 @@ class Intraface_Pdf extends Document_Cpdf
             $width = $this->get('content_width');
             $height = $size[1] * ($width/$size[0]);
         }
-        parent::addJpegFromFile($headerImg, $this->get('right_margin_position') - $width, $this->page_height - $this->get('header_margin_top') - $height, $width, $height); // , ($this->value["page_width"] - $this->value["margin_left"])/10
+        parent::addJpegFromFile($headerImg, $this->get('right_margin_position') - $width, $this->page_height - $this->get('header_margin_top') - $height, $width, $height);
         parent::closeObject();
         parent::addObject($header, "all");
         $this->setValue('margin_top', $height + $this->get('header_margin_top') + $this->get('header_margin_bottom'));
         $this->setY(0);
     }
 
-   /**
+    /**
      * create a round rectangle
      *
      * @param integer $x      The starting x point
@@ -181,12 +204,17 @@ class Intraface_Pdf extends Document_Cpdf
         parent::line($x+$width, $y+$height-$round, $x+$width, $y+$round-1);
         parent::line($x+$width-$round, $y, $x+$round, $y);
 
-        parent::partEllipse($x+$round, $y+$round,180, 270, $round);
+        parent::partEllipse($x+$round, $y+$round, 180, 270, $round);
         parent::partEllipse($x+$round, $y+$height-$round, 90, 180, $round);
         parent::partEllipse($x+$width-$round, $y+$height-$round, 0, 90, $round);
         parent::partEllipse($x+$width-$round, $y+$round, 270, 360, $round);
     }
 
+    /**
+     * Wrapper function to utf8 decode text
+     *
+     * @return void
+     */
     function addText($x, $y, $size, $text, $angle = 0, $wordSpaceAdjust = 0)
     {
         $text = utf8_decode($text);
@@ -227,10 +255,11 @@ class Intraface_Pdf extends Document_Cpdf
         }
     }
 
-   /**
+    /**
      * write the document to a file
      *
-     * @param string $data The data to write
+     * @param string $data    The data to write
+     * @param string $filnavn Name of file to write to
      *
      * @return void
      */

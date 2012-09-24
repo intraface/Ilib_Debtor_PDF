@@ -1,27 +1,31 @@
 <?php
 /**
- * Main class for Debtor pdfs. Debtor_Report_Pdf and
- * Reminder_Report_Pdf extends from this
+ * Creates a pdf of a debtor. The class implements the visitor pattern.
  *
- * PHP Version 5 
+ * The debtor must comply with a certain interface.
+ *
+ * PHP version 5
  *
  * @category Ilib_Debtor_Reports
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @license  GPL
+ * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 require_once dirname(__FILE__) . '/Pdf.php';
  
 /**
- * Main class for Debtor pdfs. Debtor_Report_Pdf and
- * Reminder_Report_Pdf extends from this
+ * Creates a pdf of a debtor. The class implements the visitor pattern.
  *
+ * The debtor must comply with a certain interface.
+ *
+ * @category Ilib_Debtor_Reports
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @category Ilib_Debtor_Reports
- * @license  GPL
+ * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 class DebtorPdf
 {
@@ -117,13 +121,27 @@ class DebtorPdf
         return($this->doc->get('y'));
     }
     
-    function addHeadline($title)
+    /**
+     * Add headline
+     *
+     * @param string $title Title to show on the pdf
+     *
+     * @return void
+     */    
+    function addHeadline(string $title)
     {
         // Writes headline
         $this->doc->setX(0);
         $this->doc->addText($this->doc->get('x'), $this->doc->get('y'), $this->doc->get("font_size") + 8, $title);
     }
     
+    /**
+     * Add data about the debtor
+     *
+     * @param array $docinfo Info about the debtor, e.g. invoice date and number
+     *
+     * @return void
+     */    
     function addDebtorData(array $docinfo)
     {
         if (is_array($docinfo) && count($docinfo) > 0) {
@@ -144,8 +162,15 @@ class DebtorPdf
             $this->doc->setY($this->doc->get("font_size") + 12); // $pointY = $this->doc->get("font_size") + 12;
         }    
     }
-    
-    function addSender($intranet)
+
+    /**
+     * Adds the sender of the invoice
+     *
+     * @param array $intranet Info about the sender
+     *
+     * @return void
+     */    
+    function addSender(array $intranet)
     {
         if (is_array($intranet) && count($intranet) > 0) {
             $this->doc->setX(self::BOX_WIDTH + 10);
@@ -176,7 +201,6 @@ class DebtorPdf
                 $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
             }
 
-
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Telefon:");
             $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["phone"]);
             $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
@@ -192,7 +216,14 @@ class DebtorPdf
         // box around the sender
         $this->doc->roundRectangle($this->doc->get('x'), $this->doc->get('y'), $this->doc->get('right_margin_position') - $this->doc->get('x'), $this->box_height, 10);
     }
-    
+
+    /**
+     * Add receiver of the debtor
+     *
+     * @param array $contact Information about the receiver
+     *
+     * @return void
+     */    
     function addReceiver($contact)
     {    
         $this->doc->setY('-' . $this->doc->get("font_spacing")); // $pointY -= self::BOX_PADDING_TOP;
@@ -335,7 +366,6 @@ class DebtorPdf
         // TODO change the - back to <> but it does not work
 
         $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "+71- ".str_repeat("0", 15 - strlen($parameter["girocode"])).$parameter["girocode"]." +".$payment_info["giro_account_number"]."-");
-
     }
     
     function addPaymentGiroaccount($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
@@ -433,6 +463,13 @@ class DebtorPdf
          $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_reg_number"]."       ".$payment_info["bank_account_number"]);
     }
     
+    /**
+     * Adds payments
+     *
+     * @param array $parameter Adds info about payments
+     *
+     * @return void
+     */    
     function addPayments($parameter)
     {
         if (isset($parameter['payment']) AND $parameter['payment'] != 0 OR isset($parameter['payment_online']) AND $parameter['payment_online'] != 0) {

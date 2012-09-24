@@ -14,11 +14,12 @@
  * $report->visit($debtor);
  * </code>
  *
+ * @category Ilib_Debtor_Reports
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @category Ilib_Debtor_Reports
- * @license  GPL
+ * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 require_once dirname(__FILE__) . '/DebtorPdf.php'; 
 
@@ -33,11 +34,12 @@ require_once dirname(__FILE__) . '/DebtorPdf.php';
  * $report->visit($debtor);
  * </code>
  *
+ * @category Ilib_Debtor_Reports
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @category Ilib_Debtor_Reports
- * @license  GPL
+ * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 class DebtorVisitorPdf extends DebtorPdf
 {
@@ -57,7 +59,8 @@ class DebtorVisitorPdf extends DebtorPdf
     /**
      * Visitor for the debtor
      *
-     * @param object $debtor The debtor to be written
+     * @param object $debtor        The debtor to be written PDF
+     * @param object $onlinepayment Optional onlinepayment
      *
      * @return void
      */
@@ -99,6 +102,13 @@ class DebtorVisitorPdf extends DebtorPdf
         }
     }
 
+    /**
+     * Add message to PDF
+     *
+     * @param object $debtor Debtor to retrive message from
+     *
+     * @return void
+     */
     function addMessage($debtor)
     {
         $text = explode("\r\n", $debtor->get('message'));
@@ -120,7 +130,7 @@ class DebtorVisitorPdf extends DebtorPdf
             }
         }    
     }
-    
+
     function addSenderAndRecieverVisit($debtor)
     {
         $contact = $debtor->contact->address->get();
@@ -146,7 +156,12 @@ class DebtorVisitorPdf extends DebtorPdf
 
         $this->addRecieverAndSender($contact, $intranet, $title, $this->docinfo);    
     }
-    
+
+    /**
+     * Add product headlines to product table
+     *
+     * @return array with points
+     */    
     function addProductListHeadlines()
     {
         $this->doc->setY('-40'); // space to the product list
@@ -173,6 +188,11 @@ class DebtorVisitorPdf extends DebtorPdf
         return $apointX;
     }
     
+    /**
+     * Add product headlines to product table
+     *
+     * @return array with points
+     */    
     function addProductsList($debtor, $items, $apointX)
     {
         $total = 0;
