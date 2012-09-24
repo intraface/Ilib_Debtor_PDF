@@ -1,0 +1,16 @@
+language: php
+php:
+  - 5.3
+before_script:
+  - mysql -e 'create database IF NOT EXISTS intraface_test;'
+  - pear config-set preferred_state alpha
+  - pear channel-discover public.intraface.dk
+  - pear channel-discover pearhub.org
+  - pear install --force intrafacepublic/Ilib_Variable-1.0.1
+  - pear install PHP_CodeSniffer
+  - cd test
+  - phpunit --version  
+  - phpenv rehash
+script: 
+  - phpunit --configuration phpunit.example.xml .
+  - phpcs src
