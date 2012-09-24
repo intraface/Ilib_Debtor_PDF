@@ -14,9 +14,9 @@
  * $report->visit($debtor);
  * </code>
  *
- * @package Intraface_Debtor
- * @author Lars Olesen <lars@legestue.net>
- * @author Sune Jensen <sj@sunet.dk>
+ * @package  Intraface_Debtor
+ * @author   Lars Olesen <lars@legestue.net>
+ * @author   Sune Jensen <sj@sunet.dk>
  * @category Ilib_Debtor_Reports
  * @license  GPL
  */
@@ -33,9 +33,9 @@ require_once dirname(__FILE__) . '/DebtorPdf.php';
  * $report->visit($debtor);
  * </code>
  *
- * @package Intraface_Debtor
- * @author Lars Olesen <lars@legestue.net>
- * @author Sune Jensen <sj@sunet.dk>
+ * @package  Intraface_Debtor
+ * @author   Lars Olesen <lars@legestue.net>
+ * @author   Sune Jensen <sj@sunet.dk>
  * @category Ilib_Debtor_Reports
  * @license  GPL
  */
