@@ -8,6 +8,7 @@ before_script:
   - pear channel-discover pearhub.org
   - pear install --force intrafacepublic/Ilib_Variable-1.0.1
   - pear install PHP_CodeSniffer
+  - pear install intrafacepublic/Document_Cpdf  
   - cd test
   - phpunit --version  
   - phpenv rehash
