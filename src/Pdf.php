@@ -73,7 +73,7 @@ class Intraface_Pdf extends Document_Cpdf
 
         parent::selectFont('Helvetica.afm', array('differences' => $diff));
 
-        $this->calculateDynamicValues();
+        $this->_calculateDynamicValues();
     }
 
     /**
@@ -230,8 +230,10 @@ class Intraface_Pdf extends Document_Cpdf
      */
     public function nextPage($sub_text = false)
     {
+        $text = "<i>Fortsættes på næste side...</i>";
+        
         if ($sub_text == true) {
-            $this->addText($this->value['right_margin_position'] - $this->getTextWidth($this->value['font_size'], "<i>Fortsættes på næste side...</i>") - 30, $this->value["margin_bottom"] - $this->value['font_padding_top'] - $this->value['font_size'], $this->value['font_size'], "<i>Fortsættes på næste side...</i>");
+            $this->addText($this->value['right_margin_position'] - $this->getTextWidth($this->value['font_size'], $text) - 30, $this->value["margin_bottom"] - $this->value['font_padding_top'] - $this->value['font_size'], $this->value['font_size'], $text);
         }
         parent::newPage();
         $this->setY(0);

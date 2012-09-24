@@ -128,9 +128,8 @@ class DebtorPdf
      *
      * @return void
      */    
-    function addHeadline(string $title)
+    function addHeadline($title)
     {
-        // Writes headline
         $this->doc->setX(0);
         $this->doc->addText($this->doc->get('x'), $this->doc->get('y'), $this->doc->get("font_size") + 8, $title);
     }
