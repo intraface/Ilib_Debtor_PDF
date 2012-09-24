@@ -3,12 +3,26 @@
  * Main class for Debtor pdfs. Debtor_Report_Pdf and
  * Reminder_Report_Pdf extends from this
  *
- * @package Intraface_Debtor
- * @author Lars Olesen <lars@legestue.net>
- * @author Sune Jensen <sj@sunet.dk>
+ * PHP Version 5 
+ *
+ * @package  Intraface_Debtor
+ * @author   Lars Olesen <lars@legestue.net>
+ * @author   Sune Jensen <sj@sunet.dk>
+ * @category Ilib_Debtor_Reports
+ * @license  GPL
  */
 require_once dirname(__FILE__) . '/Pdf.php';
  
+/**
+ * Main class for Debtor pdfs. Debtor_Report_Pdf and
+ * Reminder_Report_Pdf extends from this
+ *
+ * @package  Intraface_Debtor
+ * @author   Lars Olesen <lars@legestue.net>
+ * @author   Sune Jensen <sj@sunet.dk>
+ * @category Ilib_Debtor_Reports
+ * @license  GPL
+ */
 class DebtorPdf
 {
     protected $file;

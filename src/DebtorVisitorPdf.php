@@ -17,9 +17,28 @@
  * @package Intraface_Debtor
  * @author Lars Olesen <lars@legestue.net>
  * @author Sune Jensen <sj@sunet.dk>
+ * @category Ilib_Debtor_Reports
+ * @license  GPL
  */
 require_once dirname(__FILE__) . '/DebtorPdf.php'; 
 
+/**
+ * Creates a pdf of a debtor. The class implements the visitor pattern.
+ *
+ * The debtor must comply with a certain interface.
+ *
+ * <code>
+ * $file = new FileHandler($file_id);
+ * $report = new Debtor_Report_Pdf($file);
+ * $report->visit($debtor);
+ * </code>
+ *
+ * @package Intraface_Debtor
+ * @author Lars Olesen <lars@legestue.net>
+ * @author Sune Jensen <sj@sunet.dk>
+ * @category Ilib_Debtor_Reports
+ * @license  GPL
+ */
 class DebtorVisitorPdf extends DebtorPdf
 {
     /**
@@ -100,8 +119,21 @@ class DebtorVisitorPdf extends DebtorPdf
                 }
             }
         }
+        
+        $apointX = $this->addProductListHeadlines();
 
-        // Headlines for the products
+        // products
+        $items = $debtor->getItems();
+        $this->addProductsList($debtor, $items, $apointX);
+        
+        // payment condition
+        if ($debtor->get("type") == "invoice" || $debtor->get("type") == "order") {
+            $this->addPaymentConditionVisit($debtor, $onlinepayment);
+        }
+    }
+    
+    function addProductListHeadlines()
+    {
         $this->doc->setY('-40'); // space to the product list
 
         $apointX["varenr"] = 80;
@@ -113,7 +145,6 @@ class DebtorVisitorPdf extends DebtorPdf
         $apointX["tekst_width"] = $this->doc->get('right_margin_position') - $this->doc->get("margin_left") - $apointX["tekst"] - 60;
         $apointX["tekst_width_small"] = $apointX["antal"] - $this->doc->get("margin_left") - $apointX["tekst"];
 
-
         $this->doc->addText($apointX["varenr"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Varenr."), $this->doc->get('y'), $this->doc->get("font_size"), "Varenr.");
         $this->doc->addText($apointX["tekst"], $this->doc->get('y'), $this->doc->get("font_size"), "Tekst");
         $this->doc->addText($apointX["antal"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Antal"), $this->doc->get('y'), $this->doc->get("font_size"), "Antal");
@@ -123,10 +154,12 @@ class DebtorVisitorPdf extends DebtorPdf
         $this->doc->setY('-'.($this->doc->get("font_spacing") - $this->doc->get("font_size")));
 
         $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
-
-        // products
-        $items = $debtor->getItems();
-
+    
+        return $apointX;
+    }
+    
+    function addProductsList($debtor, $items, $apointX)
+    {
         $total = 0;
         if ($debtor->getCurrency()) {
             $total_currency = 0;
@@ -302,11 +335,11 @@ class DebtorVisitorPdf extends DebtorPdf
         $this->doc->addText($apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$total_text."</b>");
         $this->doc->addText($apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>"), $this->doc->get('y'), $this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>");
         $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
-        $this->doc->line($apointX["enhed"], $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
-
-        // payment condition
-        if ($debtor->get("type") == "invoice" || $debtor->get("type") == "order") {
-
+        $this->doc->line($apointX["enhed"], $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));    
+    }
+    
+    function addPaymentConditionVisit($debtor, $onlinepayment)
+    {
             $parameter = array(
                 "contact" => $debtor->contact,
                 "payment_text" => ucfirst($this->translation->get($debtor->get('type')))." ".$debtor->get("number"),
@@ -325,7 +358,6 @@ class DebtorVisitorPdf extends DebtorPdf
                     $parameter['payment_online'] += $p["amount"];
                 }
             }
-
 
             $this->addPaymentCondition($debtor->get("payment_method"), $parameter, $debtor->getPaymentInformation());
 
@@ -354,6 +386,6 @@ class DebtorVisitorPdf extends DebtorPdf
                     }
                 }
             }
-        }
+    
     }
 }
