@@ -1,7 +1,7 @@
 <?php
 class FakeDebtor
 {
-    function __construct() 
+    function __construct($payment_method = 2) 
     {
         $this->values = array(
             'id' => 1,
@@ -18,7 +18,7 @@ class FakeDebtor
             'payment_total' => 0,
             'payment_online' => 0,
             'girocode' => '',
-            'payment_method' => 2);
+            'payment_method' => $payment_method);
     }
 
     function getItems() 

@@ -61,16 +61,68 @@ class DebtorVisitorPdf extends DebtorPdf
      *
      * @return void
      */
-    function visit($debtor, $onlinepayment = NULL)
+    function visit($debtor, $onlinepayment = null)
     {
         $this->doc = $this->getDocument();
 
+        // Header.
         if (!empty($this->file) AND $this->file->get('id') > 0) {
             $this->doc->addHeader($this->file->get('file_uri_pdf'));
         }
 
+        // WHAT IS THIS FOR?
         $this->doc->setY('-5');
 
+        // Sender and Reciever.
+        $this->addSenderAndRecieverVisit($debtor);
+
+        // WHAT IS THIS FOR?
+        $this->doc->setY('-'.$this->doc->get("font_spacing"));
+
+        // WHAT IS THIS FOR?
+        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
+            $this->doc->nextPage(true);
+        }
+
+        if ($debtor->get('message')) {
+            $this->addMessage($debtor);
+        }
+
+        // Products.
+        $apointX = $this->addProductListHeadlines();
+        $items = $debtor->getItems();
+        $this->addProductsList($debtor, $items, $apointX);
+        
+        // Payment condition.
+        if ($debtor->get("type") == "invoice" || $debtor->get("type") == "order") {
+            $this->addPaymentConditionVisit($debtor, $onlinepayment);
+        }
+    }
+
+    function addMessage($debtor)
+    {
+        $text = explode("\r\n", $debtor->get('message'));
+        foreach ($text AS $line) {
+            if ($line == "") {
+                $this->doc->setY('-'.$this->doc->get("font_spacing"));
+                if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
+                    $this->doc->nextPage(true);
+                }
+            } else {
+                while ($line != "") {
+                    $this->doc->setY('-'.($this->doc->get("font_padding_top") + $this->doc->get("font_size")));
+                    $line = $this->doc->addTextWrap($this->doc->get('margin_left'), $this->doc->get('y'), $this->doc->get('content_width'), $this->doc->get("font_size"), $line);
+                    $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
+                    if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
+                        $this->doc->nextPage(true);
+                    }
+                }
+            }
+        }    
+    }
+    
+    function addSenderAndRecieverVisit($debtor)
+    {
         $contact = $debtor->contact->address->get();
         if (is_object($debtor->contact_person)) {
             $contact["attention_to"] = $debtor->contact_person->get("name");
@@ -79,7 +131,6 @@ class DebtorVisitorPdf extends DebtorPdf
 
         $intranet_address = $debtor->getIntranetAddress();
         $intranet = $intranet_address->get();
-
         $intranet = array_merge($intranet, $debtor->getContactInformation());
 
         $this->docinfo[0]["label"] = $this->translation->get($debtor->get('type').' number').":";
@@ -91,45 +142,9 @@ class DebtorVisitorPdf extends DebtorPdf
             $this->docinfo[2]["value"] = $debtor->get("dk_due_date");
         }
 
-        $this->addRecieverAndSender($contact, $intranet, $this->translation->get($debtor->get('type')), $this->docinfo);
+        $title = $this->translation->get($debtor->get('type'));
 
-        $this->doc->setY('-'.$this->doc->get("font_spacing"));
-
-        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
-            $this->doc->nextPage(true);
-        }
-
-        if ($debtor->get('message')) {
-            $text = explode("\r\n", $debtor->get('message'));
-            foreach ($text AS $line) {
-                if ($line == "") {
-                    $this->doc->setY('-'.$this->doc->get("font_spacing"));
-                    if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
-                        $this->doc->nextPage(true);
-                    }
-                } else {
-                    while ($line != "") {
-                        $this->doc->setY('-'.($this->doc->get("font_padding_top") + $this->doc->get("font_size")));
-                        $line = $this->doc->addTextWrap($this->doc->get('margin_left'), $this->doc->get('y'), $this->doc->get('content_width'), $this->doc->get("font_size"), $line);
-                        $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
-                        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
-                            $this->doc->nextPage(true);
-                        }
-                    }
-                }
-            }
-        }
-        
-        $apointX = $this->addProductListHeadlines();
-
-        // products
-        $items = $debtor->getItems();
-        $this->addProductsList($debtor, $items, $apointX);
-        
-        // payment condition
-        if ($debtor->get("type") == "invoice" || $debtor->get("type") == "order") {
-            $this->addPaymentConditionVisit($debtor, $onlinepayment);
-        }
+        $this->addRecieverAndSender($contact, $intranet, $title, $this->docinfo);    
     }
     
     function addProductListHeadlines()
@@ -340,52 +355,49 @@ class DebtorVisitorPdf extends DebtorPdf
     
     function addPaymentConditionVisit($debtor, $onlinepayment)
     {
-            $parameter = array(
-                "contact" => $debtor->contact,
-                "payment_text" => ucfirst($this->translation->get($debtor->get('type')))." ".$debtor->get("number"),
-                "amount" => $debtor->get("total"),
-                "payment" => $debtor->get('payment_total'),
-                "payment_online" => 0,
-                "due_date" => $debtor->get("dk_due_date"),
-                "girocode" => $debtor->get("girocode"));
+        $parameter = array(
+            "contact" => $debtor->contact,
+            "payment_text" => ucfirst($this->translation->get($debtor->get('type')))." ".$debtor->get("number"),
+            "amount" => $debtor->get("total"),
+            "payment" => $debtor->get('payment_total'),
+            "payment_online" => 0,
+            "due_date" => $debtor->get("dk_due_date"),
+            "girocode" => $debtor->get("girocode"));
 
-            if (is_object($onlinepayment)) {
-                $onlinepayment->getDBQuery()->setFilter('belong_to', $debtor->get("type"));
-                $onlinepayment->getDBQuery()->setFilter('belong_to_id', $debtor->get('id'));
-                $onlinepayment->getDBQuery()->setFilter('status', 2);
+        if (is_object($onlinepayment)) {
+            $onlinepayment->getDBQuery()->setFilter('belong_to', $debtor->get("type"));
+            $onlinepayment->getDBQuery()->setFilter('belong_to_id', $debtor->get('id'));
+            $onlinepayment->getDBQuery()->setFilter('status', 2);
+            foreach ($onlinepayment->getlist() AS $p) {
+                $parameter['payment_online'] += $p["amount"];
+            }
+        }
 
-                foreach ($onlinepayment->getlist() AS $p) {
-                    $parameter['payment_online'] += $p["amount"];
+        $this->addPaymentCondition($debtor->get("payment_method"), $parameter, $debtor->getPaymentInformation());
+
+        $this->doc->setY('-'.$this->doc->get("font_spacing"));
+
+        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
+            $this->doc->nextPage(true);
+        }
+
+        $text = explode("\r\n", $debtor->getInvoiceText());
+        foreach ($text AS $line) {
+            if ($line == "") {
+                $this->doc->setY('-'.$this->doc->get("font_spacing"));
+                if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
+                    $this->doc->nextPage(true);
                 }
-            }
-
-            $this->addPaymentCondition($debtor->get("payment_method"), $parameter, $debtor->getPaymentInformation());
-
-            $this->doc->setY('-'.$this->doc->get("font_spacing"));
-
-            if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
-                $this->doc->nextPage(true);
-            }
-
-            $text = explode("\r\n", $debtor->getInvoiceText());
-            foreach ($text AS $line) {
-                if ($line == "") {
-                    $this->doc->setY('-'.$this->doc->get("font_spacing"));
+            } else {
+                while ($line != "") {
+                    $this->doc->setY('-'.($this->doc->get("font_padding_top") + $this->doc->get("font_size")));
+                    $line = $this->doc->addTextWrap($this->doc->get('margin_left'), $this->doc->get('y'), $this->doc->get('content_width'), $this->doc->get("font_size"), $line);
+                    $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
                     if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
                         $this->doc->nextPage(true);
                     }
-                } else {
-                    while ($line != "") {
-                        $this->doc->setY('-'.($this->doc->get("font_padding_top") + $this->doc->get("font_size")));
-                        $line = $this->doc->addTextWrap($this->doc->get('margin_left'), $this->doc->get('y'), $this->doc->get('content_width'), $this->doc->get("font_size"), $line);
-                        $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
-
-                        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
-                            $this->doc->nextPage(true);
-                        }
-                    }
                 }
             }
-    
+        }    
     }
 }

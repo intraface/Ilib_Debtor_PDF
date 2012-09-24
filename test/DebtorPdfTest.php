@@ -12,7 +12,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
     function tearDown()
     {
         if (file_exists($this->path_to_debtor)) {
-            unlink($this->path_to_debtor);
+            //unlink($this->path_to_debtor);
         }
     }
 
@@ -21,9 +21,9 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         return new DebtorVisitorPdf(new Stub_Translation);
     }
 
-    function createDebtor()
+    function createDebtor($payment_method = 2)
     {
-        $debtor = new FakeDebtor();
+        $debtor = new FakeDebtor($payment_method);
         $debtor->contact = new FakeContact;
         $debtor->contact->address = new Stub_Address;
         $debtor->contact_person = new FakeContactPerson;
@@ -79,6 +79,18 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
         $expected = file_get_contents(dirname(__FILE__) .'/expected_debtor_with_long_text.pdf', 1);
+        $actual = file_get_contents($this->path_to_debtor);
+
+        $this->assertEquals(strlen($expected), strlen($actual));
+    }
+
+    function testVisitWithBankTransferPayment()
+    {
+        $pdf = $this->createPdf();
+        $debtor = $this->createDebtor(1);
+        $pdf->visit($debtor);
+        $pdf->output('file', $this->path_to_debtor);
+        $expected = file_get_contents(dirname(__FILE__) .'/debtor_expected_banktransfer.pdf', 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));

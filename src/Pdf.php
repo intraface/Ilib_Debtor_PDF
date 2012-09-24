@@ -70,7 +70,7 @@ class Intraface_Pdf extends Document_Cpdf
 
         $this->value['font_spacing'] = $this->value['font_size'] + $this->value['font_padding_top'] + $this->value['font_padding_bottom'];
 
-        // X and Y are need to be reset, if the margins are changed.
+        // X and Y need to be reset, if the margins are changed.
         $this->setX(0);
         $this->setY(0);
     }
@@ -187,20 +187,6 @@ class Intraface_Pdf extends Document_Cpdf
         parent::partEllipse($x+$width-$round, $y+$round, 270, 360, $round);
     }
 
-   /**
-     * write the document to a file
-     *
-     * @param string $data The data to write
-     *
-     * @return void
-     */
-    public function writeDocument($data, $filnavn)
-    {
-        $file = fopen($filnavn, 'wb');
-        fwrite($file, $data);
-        fclose($file);
-    }
-
     function addText($x, $y, $size, $text, $angle = 0, $wordSpaceAdjust = 0)
     {
         $text = utf8_decode($text);
@@ -239,5 +225,19 @@ class Intraface_Pdf extends Document_Cpdf
         } else {
             return $this->value;
         }
+    }
+
+   /**
+     * write the document to a file
+     *
+     * @param string $data The data to write
+     *
+     * @return void
+     */
+    public function writeDocument($data, $filnavn)
+    {
+        $file = fopen($filnavn, 'wb');
+        fwrite($file, $data);
+        fclose($file);
     }
 }

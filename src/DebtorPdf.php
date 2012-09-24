@@ -5,10 +5,10 @@
  *
  * PHP Version 5 
  *
+ * @category Ilib_Debtor_Reports
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @category Ilib_Debtor_Reports
  * @license  GPL
  */
 require_once dirname(__FILE__) . '/Pdf.php';
@@ -28,6 +28,11 @@ class DebtorPdf
     protected $file;
     protected $translation;
     protected $doc;
+    protected $box_height;
+    protected $box_top;    
+    const BOX_PADDING_TOP = 8;
+    const BOX_PADDING_BOTTOM = 9;
+    const BOX_WIDTH = 275;
 
     /**
      * Constructor
@@ -88,27 +93,111 @@ class DebtorPdf
      *
      * @param array  $contact  Information about the contact
      * @param array  $intranet Information about the intranet
-     * @param string $title    WHAT IS THIS?
-     * @param array  $docinfo  WHAT IS THIS?
+     * @param string $title    Title of the debtor, e.g. invoice
+     * @param array  $docinfo  Information about the debtor
      *
      * @return The y-coordinate after payment condition has been added
      */
-    function addRecieverAndSender($contact, $intranet = array(), $title = "", $docinfo = array())
+    function addRecieverAndSender(array $contact, $intranet = array(), $title = "", $docinfo = array())
     {
-        if (!is_array($contact)) {
-            throw new Exception("Første parameter skal være et array med konkaktoplysninger i PdfDebtor->addRecieverAndSender");
-        }
-
-        $box_top = $this->doc->get('y'); // $pointY;
-        $box_padding_top = 8; // space from top box to first line
-        $box_padding_bottom = 9;
-        $box_width = 275; // ($page_width - $margin_left - 10)/2;
-        $box_small_height = $this->doc->get("font_spacing") * 3 + $box_padding_top + $box_padding_bottom + 2;
+        $this->box_top = $this->doc->get('y'); // $pointY;
 
         // Write the receiver
-        $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $box_padding_top;
-        $this->doc->addText($this->doc->get('x') + $box_width - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Modtager");
-        $this->doc->setY('-'.$box_padding_top);
+        $this->box_height = $this->addReceiver($contact);
+
+        // Write sender
+        $this->addSender($intranet);
+
+        // Add data about the debtor
+        $this->addDebtorData($docinfo);
+
+        // Adds headline
+        $this->addHeadline($title);
+        
+        return($this->doc->get('y'));
+    }
+    
+    function addHeadline($title)
+    {
+        // Writes headline
+        $this->doc->setX(0);
+        $this->doc->addText($this->doc->get('x'), $this->doc->get('y'), $this->doc->get("font_size") + 8, $title);
+    }
+    
+    function addDebtorData(array $docinfo)
+    {
+        if (is_array($docinfo) && count($docinfo) > 0) {
+            $this->doc->setY('-10'); // $pointY -= 10;
+            $box_small_top = $this->doc->get('y');
+            $box_small_height = count($docinfo) * $this->doc->get("font_spacing") + self::BOX_PADDING_TOP + self::BOX_PADDING_BOTTOM;
+            $this->doc->setY('-' . self::BOX_PADDING_TOP); // $pointY -= self::BOX_PADDING_TOP;
+
+            foreach ($docinfo as $info) {
+                $this->doc->setY('-'.$this->doc->get('font_spacing'));
+                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $info["label"]);
+                $this->doc->addText($this->doc->get("right_margin_position") - 40 - $this->doc->getTextWidth($this->doc->get("font_size"), $info["value"]), $this->doc->get('y'), $this->doc->get("font_size"), $info["value"]);
+            }
+
+            $this->doc->setValue('y', $box_small_top - $box_small_height); // Sets exact position
+            $this->doc->roundRectangle($this->doc->get('x'), $this->doc->get('y'), $this->doc->get('right_margin_position') - $this->doc->get('x'), $box_small_height, 10);
+        } else {
+            $this->doc->setY($this->doc->get("font_size") + 12); // $pointY = $this->doc->get("font_size") + 12;
+        }    
+    }
+    
+    function addSender($intranet)
+    {
+        if (is_array($intranet) && count($intranet) > 0) {
+            $this->doc->setX(self::BOX_WIDTH + 10);
+            $this->doc->setValue('y', $this->box_top); // sets exact position
+            $this->doc->setY('-'.$this->doc->get("font_spacing"));
+            $this->doc->addText($this->doc->get('right_margin_position') - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Afsender");
+
+            $this->doc->setY('-' . self::BOX_PADDING_TOP); // $pointY -= self::BOX_PADDING_TOP;
+            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$intranet["name"]."</b>");
+
+            $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
+            $line = explode("\r\n", $intranet["address"]);
+            for ($i = 0; $i < count($line); $i++) {
+                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
+                $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
+                if ($i == 2) $i = count($line);
+            }
+            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["postcode"]." ".$intranet["city"]);
+            $this->doc->setY('-'.($this->doc->get("font_spacing") * 2)); // $pointY -= $this->doc->get("font_spacing") * 2;
+
+            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "CVR.:");
+            $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["cvr"]);
+            $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
+
+            if (!empty($intranet["contact_person"]) AND $intranet['contact_person'] != $intranet["name"]) {
+                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Kontakt:");
+                $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["contact_person"]);
+                $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
+            }
+
+
+            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Telefon:");
+            $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["phone"]);
+            $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
+
+            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "E-mail:");
+            $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["email"]);
+
+            if ($this->box_top - $this->doc->get('y') + self::BOX_PADDING_BOTTOM > $this->box_height) {
+                $this->box_height = $this->box_top - $this->doc->get('y') + self::BOX_PADDING_BOTTOM;
+            }
+        }
+        $this->doc->setValue('y', $this->box_top - $this->box_height); // sets exact position
+        // box around the sender
+        $this->doc->roundRectangle($this->doc->get('x'), $this->doc->get('y'), $this->doc->get('right_margin_position') - $this->doc->get('x'), $this->box_height, 10);
+    }
+    
+    function addReceiver($contact)
+    {    
+        $this->doc->setY('-' . $this->doc->get("font_spacing")); // $pointY -= self::BOX_PADDING_TOP;
+        $this->doc->addText($this->doc->get('x') + self::BOX_WIDTH - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Modtager");
+        $this->doc->setY('-' . self::BOX_PADDING_TOP);
         $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$contact["name"]."</b>");
 
         $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
@@ -147,83 +236,12 @@ class DebtorPdf
             $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y') - 15, $this->doc->get("font_size"), $contact["ean"]);
         }
 
-        $box_height = $box_top - $this->doc->get('y') + $box_padding_bottom;
+        $this->box_height = $this->box_top - $this->doc->get('y') + self::BOX_PADDING_BOTTOM;
 
-        // Write sender
-        if (is_array($intranet) && count($intranet) > 0) {
-            $this->doc->setX($box_width + 10);
-            $this->doc->setValue('y', $box_top); // sets exact position
-            $this->doc->setY('-'.$this->doc->get("font_spacing"));
-            $this->doc->addText($this->doc->get('right_margin_position') - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Afsender");
-
-            $this->doc->setY('-'.$box_padding_top); // $pointY -= $box_padding_top;
-            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$intranet["name"]."</b>");
-
-            $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
-            $line = explode("\r\n", $intranet["address"]);
-            for ($i = 0; $i < count($line); $i++) {
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
-                $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
-                if ($i == 2) $i = count($line);
-            }
-            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["postcode"]." ".$intranet["city"]);
-            $this->doc->setY('-'.($this->doc->get("font_spacing") * 2)); // $pointY -= $this->doc->get("font_spacing") * 2;
-
-            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "CVR.:");
-            $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["cvr"]);
-            $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
-
-            if (!empty($intranet["contact_person"]) AND $intranet['contact_person'] != $intranet["name"]) {
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Kontakt:");
-                $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["contact_person"]);
-                $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
-            }
-
-
-            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Telefon:");
-            $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["phone"]);
-            $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
-
-            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "E-mail:");
-            $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["email"]);
-
-            if ($box_top - $this->doc->get('y') + $box_padding_bottom > $box_height) {
-                $box_height = $box_top - $this->doc->get('y') + $box_padding_bottom;
-            }
-        }
-
-        $this->doc->setValue('y', $box_top - $box_height); // sets exact position
-
-        // box around the sender
-        $this->doc->roundRectangle($this->doc->get('x'), $this->doc->get('y'), $this->doc->get('right_margin_position') - $this->doc->get('x'), $box_height, 10);
+        $this->doc->setValue('y', $this->box_top - $this->box_height); // sets exact position
 
         // box around the receiver
-        $this->doc->roundRectangle($this->doc->get("margin_left"), $this->doc->get('y'), $box_width, $box_height, 10);
-
-        // Write invoice data
-        if (is_array($docinfo) && count($docinfo) > 0) {
-            $this->doc->setY('-10'); // $pointY -= 10;
-            $box_small_top = $this->doc->get('y');
-            $box_small_height = count($docinfo) * $this->doc->get("font_spacing") + $box_padding_top + $box_padding_bottom;
-            $this->doc->setY('-'.$box_padding_top); // $pointY -= $box_padding_top;
-
-            for ($i = 0; $i < count($docinfo); $i++) {
-                $this->doc->setY('-'.$this->doc->get('font_spacing'));
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $docinfo[$i]["label"]);
-                $this->doc->addText($this->doc->get("right_margin_position") - 40 - $this->doc->getTextWidth($this->doc->get("font_size"), $docinfo[$i]["value"]), $this->doc->get('y'), $this->doc->get("font_size"), $docinfo[$i]["value"]);
-            }
-
-            $this->doc->setValue('y', $box_small_top - $box_small_height); // Sets exact position
-            $this->doc->roundRectangle($this->doc->get('x'), $this->doc->get('y'), $this->doc->get('right_margin_position') - $this->doc->get('x'), $box_small_height, 10);
-        } else {
-            $this->doc->setY($this->doc->get("font_size") + 12); // $pointY = $this->doc->get("font_size") + 12;
-        }
-
-        // Writes headline
-        $this->doc->setX(0);
-        $this->doc->addText($this->doc->get('x'), $this->doc->get('y'), $this->doc->get("font_size") + 8, $title);
-
-        return($this->doc->get('y'));
+        $this->doc->roundRectangle($this->doc->get("margin_left"), $this->doc->get('y'), self::BOX_WIDTH, $this->box_height, 10);
     }
 
     /**
@@ -249,6 +267,174 @@ class DebtorPdf
         }
 
         // adding payments
+        $amount = $this->addPayments($parameter);
+
+        // Payment information
+        if ($amount <= 0) {
+            $payment_method = 0; // if amount i 0 no payment information
+        }
+
+        if ($payment_method > 0) {
+            $this->doc->setY('-20'); // $pointY -= 20; // Distance to payment info
+
+            $payment_line = 26;
+            $payment_left = 230;
+            $payment_right = $this->doc->get("right_margin_position") - $this->doc->get("margin_left") - $payment_left;
+
+            if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") + 4 + $payment_line * 3) {
+                $this->doc->nextPage(true);
+            }
+
+            // Black bar
+            $this->doc->setLineStyle(1);
+            $this->doc->setColor(0, 0, 0);
+            $this->doc->filledRectangle($this->doc->get("margin_left"), $this->doc->get('y') - $this->doc->get("font_spacing") - 4, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $this->doc->get("font_spacing") + 4);
+            $this->doc->setColor(1, 1, 1);
+            $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2)); // $pointY -= $this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2;
+            $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") + 2, "Indbetalingsoplysninger");
+            $this->doc->setColor(0, 0, 0);
+            $this->doc->setY('-'.($this->doc->get("font_padding_bottom") + 2)); // $pointY -= $this->doc->get("font_padding_bottom") + 2;
+
+            $payment_start = $this->doc->get('y');
+
+            if ($payment_method == 1) {
+                $this->addPaymentBankTransfer($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
+            } elseif ($payment_method == 2) {
+                $this->addPaymentGiroaccount($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
+            } elseif ($payment_method == 3) {
+                $this->addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
+            }
+        }
+        return $this->doc->get('y');
+    }
+    
+    function addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
+    {
+        $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 2);
+        $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y') - $payment_line, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line);
+        $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y'), $this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line);
+
+        $this->doc->setY('-7');
+
+        $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Beløb DKK:");
+        $this->doc->setY('-'.($payment_line - 12));
+        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
+
+        $this->doc->setValue('y', $payment_start); // Sætter eksakt position
+        $this->doc->setY('-7');
+
+        $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Betalingsdato:");
+        $this->doc->setY('-'.($payment_line - 12));
+        $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["due_date"]);
+
+        $this->doc->setValue('y', $payment_start - $payment_line); // sætter eksakt position
+        $this->doc->setY('-7');
+
+        $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Kodelinje: (Ej til maskinel aflæsning)");
+        $this->doc->setY('-'.($payment_line - 12));
+        // TODO change the - back to <> but it does not work
+
+        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "+71- ".str_repeat("0", 15 - strlen($parameter["girocode"])).$parameter["girocode"]." +".$payment_info["giro_account_number"]."-");
+
+    }
+    
+    function addPaymentGiroaccount($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
+    {
+        $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 3, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 3);
+        $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line * 3, $this->doc->get('x') + $payment_left, $this->doc->get('y'));
+        $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line);
+        $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line * 2);
+        $this->doc->line($this->doc->get('x') + $payment_left + $payment_right / 2, $this->doc->get('y') - $payment_line * 2, $this->doc->get('x') + $payment_left + $payment_right / 2, $this->doc->get('y') - $payment_line);
+
+        $this->doc->setY('-7');
+        $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Indbetaler:");
+        $this->doc->setY('-'.$this->doc->get('font_spacing'));
+
+        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("name"));
+        $this->doc->setY('-'.$this->doc->get('font_spacing'));
+        $line = explode("\r\n", $parameter["contact"]->address->get("address"));
+        for ($i = 0; $i < count($line); $i++) {
+            $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
+            $this->doc->setY('-'.$this->doc->get('font_spacing'));
+            if ($i == 2) $i = count($line);
+        }
+        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("postcode")." ".$parameter["contact"]->address->get("city"));
+
+        $this->doc->setValue('y', $payment_start); // Sets exact position
+        $this->doc->setY('-7');
+
+        $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Tekst til modtager:");
+        $this->doc->setY('-'.($payment_line - 12));
+        $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["payment_text"]);
+
+        $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
+        $this->doc->setY('-7');
+
+        $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Beløb DKK:");
+        $this->doc->setY('-'.($payment_line - 12));
+        $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
+
+        $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
+        $this->doc->setY('-7');
+
+        $this->doc->addText($this->doc->get('x') + $payment_left + $payment_right / 2 + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Betalingsdato:");
+        $this->doc->setY('-'.($payment_line - 12));
+        $this->doc->addText($this->doc->get('x') + $payment_left + $payment_right / 2 + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["due_date"]);
+
+        $this->doc->setValue('y', $payment_start - $payment_line * 2); // Sets exact position
+        $this->doc->setY('-7');
+
+        $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Kodelinje: (Ej til maskinel aflæsning)");
+        $this->doc->setY('-'.($payment_line - 12));
+
+        // TODO change the - back to <> but it does not work right now
+        $this_text = '+01-'.str_repeat(' ', 20).'+'.$payment_info['giro_account_number'].'-';
+        $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get('font_size'), $this_text);    
+    }
+    
+    function addPaymentBankTransfer($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
+    {
+        $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 2);
+        $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line * 2, $this->doc->get('x') + $payment_left, $this->doc->get('y'));
+        $this->doc->line($this->doc->get('x'), $this->doc->get('y') - $payment_line, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line);
+        $this->doc->line($this->doc->get('x') + $payment_left / 2, $this->doc->get('y') - $payment_line * 2, $this->doc->get('x') + $payment_left / 2, $this->doc->get('y') - $payment_line);
+
+        $this->doc->setY('-7'); // $pointY -= 7;
+        $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Bank:");
+        $this->doc->setY('-'.($payment_line - 12)); // $pointY -= $payment_line - 12;
+        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_name"]);
+
+        $this->doc->setValue('y', $payment_start); // $pointY = $payment_start;
+        $this->doc->setY('-7'); // $pointY -= 7;
+
+        $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Tekst til modtager:");
+        $this->doc->setY('-'.($payment_line - 12)); // $pointY -= $payment_line - 12;
+        $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["payment_text"]);
+
+        $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
+        $this->doc->setY('-7'); // $pointY -= 7;
+
+        $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Beløb DKK:");
+        $this->doc->setY('-'.($payment_line - 12)); // $this->setY('-'.($payment_line - 12));
+        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
+
+        $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
+        $this->doc->setY('-7'); // $pointY -= 7;
+
+        $this->doc->addText($this->doc->get('x') + $payment_left / 2 + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Betalingsdato:");
+        $this->doc->setY('-'.($payment_line - 12));
+        $this->doc->addText($this->doc->get('x') + $payment_left / 2 + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["due_date"]);
+
+         $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
+         $this->doc->setY('-7');
+
+         $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Regnr.:            Kontonr.:");
+         $this->doc->setY('-'.($payment_line - 12));
+         $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_reg_number"]."       ".$payment_info["bank_account_number"]);
+    }
+    
+    function addPayments($parameter)
+    {
         if (isset($parameter['payment']) AND $parameter['payment'] != 0 OR isset($parameter['payment_online']) AND $parameter['payment_online'] != 0) {
             $this->doc->setY('-20');
 
@@ -281,160 +467,6 @@ class DebtorPdf
         if (!isset($parameter['payment_online'])) {
             $parameter['payment_online'] = 0;
         }
-        $amount = $parameter["amount"] - $parameter['payment_online'] - $parameter['payment'];
-
-        // Payment information
-        if ($amount <= 0) {
-            $payment_method = 0; // if amount i 0 no payment information
-        }
-
-        if ($payment_method > 0) {
-            $this->doc->setY('-20'); // $pointY -= 20; // Distance to payment info
-
-            $payment_line = 26;
-            $payment_left = 230;
-            $payment_right = $this->doc->get("right_margin_position") - $this->doc->get("margin_left") - $payment_left;
-
-            if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") + 4 + $payment_line * 3) {
-                $this->doc->nextPage(true);
-            }
-
-            // Black bar
-            $this->doc->setLineStyle(1);
-            $this->doc->setColor(0, 0, 0);
-            $this->doc->filledRectangle($this->doc->get("margin_left"), $this->doc->get('y') - $this->doc->get("font_spacing") - 4, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $this->doc->get("font_spacing") + 4);
-            $this->doc->setColor(1, 1, 1);
-            $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2)); // $pointY -= $this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2;
-            $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") + 2, "Indbetalingsoplysninger");
-            $this->doc->setColor(0, 0, 0);
-            $this->doc->setY('-'.($this->doc->get("font_padding_bottom") + 2)); // $pointY -= $this->doc->get("font_padding_bottom") + 2;
-
-            $payment_start = $this->doc->get('y');
-
-            if ($payment_method == 1) {
-
-                $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 2);
-                $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line * 2, $this->doc->get('x') + $payment_left, $this->doc->get('y'));
-                $this->doc->line($this->doc->get('x'), $this->doc->get('y') - $payment_line, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line);
-                $this->doc->line($this->doc->get('x') + $payment_left / 2, $this->doc->get('y') - $payment_line * 2, $this->doc->get('x') + $payment_left / 2, $this->doc->get('y') - $payment_line);
-
-                $this->doc->setY('-7'); // $pointY -= 7;
-                $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Bank:");
-                $this->doc->setY('-'.($payment_line - 12)); // $pointY -= $payment_line - 12;                // $this->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $this->kernel->setting->get("intranet", "bank_name"));
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_name"]);
-
-                $this->doc->setValue('y', $payment_start); // $pointY = $payment_start;
-                $this->doc->setY('-7'); // $pointY -= 7;
-
-                $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Tekst til modtager:");
-                $this->doc->setY('-'.($payment_line - 12)); // $pointY -= $payment_line - 12;
-                $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["payment_text"]);
-
-                $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
-                $this->doc->setY('-7'); // $pointY -= 7;
-
-                $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Beløb DKK:");
-                $this->doc->setY('-'.($payment_line - 12)); // $this->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
-
-                $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
-                $this->doc->setY('-7'); // $pointY -= 7;
-
-                $this->doc->addText($this->doc->get('x') + $payment_left / 2 + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Betalingsdato:");
-                $this->doc->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + $payment_left / 2 + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["due_date"]);
-
-                $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
-                $this->doc->setY('-7');
-
-
-                $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Regnr.:            Kontonr.:");
-                $this->doc->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_reg_number"]."       ".$payment_info["bank_account_number"]);
-
-            } elseif ($payment_method == 2) {
-
-                $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 3, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 3);
-                $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line * 3, $this->doc->get('x') + $payment_left, $this->doc->get('y'));
-                $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line);
-                $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line * 2);
-                $this->doc->line($this->doc->get('x') + $payment_left + $payment_right / 2, $this->doc->get('y') - $payment_line * 2, $this->doc->get('x') + $payment_left + $payment_right / 2, $this->doc->get('y') - $payment_line);
-
-                $this->doc->setY('-7');
-                $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Indbetaler:");
-                $this->doc->setY('-'.$this->doc->get('font_spacing'));
-
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("name"));
-                $this->doc->setY('-'.$this->doc->get('font_spacing'));
-                $line = explode("\r\n", $parameter["contact"]->address->get("address"));
-                for ($i = 0; $i < count($line); $i++) {
-                    $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
-                    $this->doc->setY('-'.$this->doc->get('font_spacing'));
-                    if ($i == 2) $i = count($line);
-                }
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("postcode")." ".$parameter["contact"]->address->get("city"));
-
-                $this->doc->setValue('y', $payment_start); // Sets exact position
-                $this->doc->setY('-7');
-
-                $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Tekst til modtager:");
-                $this->doc->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["payment_text"]);
-
-                $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
-                $this->doc->setY('-7');
-
-                $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Beløb DKK:");
-                $this->doc->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
-
-                $this->doc->setValue('y', $payment_start - $payment_line); // Sets exact position
-                $this->doc->setY('-7');
-
-                $this->doc->addText($this->doc->get('x') + $payment_left + $payment_right / 2 + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Betalingsdato:");
-                $this->doc->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + $payment_left + $payment_right / 2 + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["due_date"]);
-
-                $this->doc->setValue('y', $payment_start - $payment_line * 2); // Sets exact position
-                $this->doc->setY('-7');
-
-
-                $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Kodelinje: (Ej til maskinel aflæsning)");
-                $this->doc->setY('-'.($payment_line - 12));
-
-                // TODO change the - back to <> but it does not work right now
-                $this_text = '+01-'.str_repeat(' ', 20).'+'.$payment_info['giro_account_number'].'-';
-                $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get('font_size'), $this_text);
-            } elseif ($payment_method == 3) {
-
-                $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 2);
-                $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y') - $payment_line, $this->doc->get("right_margin_position"), $this->doc->get('y') - $payment_line);
-                $this->doc->line($this->doc->get('x') + $payment_left, $this->doc->get('y'), $this->doc->get('x') + $payment_left, $this->doc->get('y') - $payment_line);
-
-                $this->doc->setY('-7');
-
-                $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Beløb DKK:");
-                $this->doc->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
-
-                $this->doc->setValue('y', $payment_start); // Sætter eksakt position
-                $this->doc->setY('-7');
-
-                $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Betalingsdato:");
-                $this->doc->setY('-'.($payment_line - 12));
-                $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["due_date"]);
-
-                $this->doc->setValue('y', $payment_start - $payment_line); // sætter eksakt position
-                $this->doc->setY('-7');
-
-                $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Kodelinje: (Ej til maskinel aflæsning)");
-                $this->doc->setY('-'.($payment_line - 12));
-                // TODO change the - back to <> but it does not work
-
-                $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "+71- ".str_repeat("0", 15 - strlen($parameter["girocode"])).$parameter["girocode"]." +".$payment_info["giro_account_number"]."-");
-
-            }
-        }
-        return $this->doc->get('y');
+        return $amount = $parameter["amount"] - $parameter['payment_online'] - $parameter['payment'];    
     }
 }
