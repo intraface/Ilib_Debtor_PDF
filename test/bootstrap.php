@@ -1,5 +1,6 @@
 <?php
 error_reporting(E_ALL);
+define('TEST_PATH_TEMP', $GLOBALS['test_path_temp']);
 require_once 'Document/Cpdf.php';
 require_once dirname(__FILE__) . '/../src/DebtorVisitorPdf.php';
 require_once dirname(__FILE__) .'/stubs/Debtor.php';
