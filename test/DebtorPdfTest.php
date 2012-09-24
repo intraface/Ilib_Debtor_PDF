@@ -53,7 +53,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtor();
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected_debtor.pdf', 1);
+        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor.pdf', 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -66,7 +66,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor->values['payment_total'] = 2125;
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected_debtor_with_payment.pdf', 1);
+        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_with_payment.pdf', 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -78,7 +78,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtorLongProductText();
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected_debtor_with_long_text.pdf', 1);
+        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_with_long_text.pdf', 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -90,7 +90,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtor(1);
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/debtor_expected_banktransfer.pdf', 1);
+        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_with_payment_banktransfer.pdf', 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
