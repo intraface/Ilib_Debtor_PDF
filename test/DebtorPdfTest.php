@@ -12,7 +12,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
     function tearDown()
     {
         if (file_exists($this->path_to_debtor)) {
-            //unlink($this->path_to_debtor);
+            unlink($this->path_to_debtor);
         }
     }
 
