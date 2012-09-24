@@ -7,3 +7,4 @@ Requirements:
 --
 
 - PHP 5
+- [Cpdf](http://public.intraface.dk/index.php?package=Document_Cpdf) 
