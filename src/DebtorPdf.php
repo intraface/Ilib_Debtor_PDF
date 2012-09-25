@@ -33,7 +33,8 @@ class DebtorPdf
     protected $translation;
     protected $doc;
     protected $box_height;
-    protected $box_top;    
+    protected $box_top;   
+    protected $apointX;
     const BOX_PADDING_TOP = 8;
     const BOX_PADDING_BOTTOM = 9;
     const BOX_WIDTH = 275;
@@ -91,33 +92,6 @@ class DebtorPdf
             break;
         }
     }
-
-    /**
-     * Adds the sender and receiver
-     *
-     * @param array  $contact  Information about the contact
-     * @param array  $intranet Information about the intranet
-     * @param string $title    Title of the debtor, e.g. invoice
-     * @param array  $docinfo  Information about the debtor
-     *
-     * @return The y-coordinate after payment condition has been added
-     */
-    function addRecieverAndSender(array $contact, $intranet = array(), $title = "", $docinfo = array())
-    {
-        $this->box_top = $this->doc->get('y'); // $pointY;
-
-        // Write the receiver
-        $this->addReceiver($contact);
-
-        // Write sender
-        $this->addSender($intranet);
-
-        // Add data about the debtor
-        $this->addDebtorData($docinfo);
-
-        // Adds headline
-        $this->addHeadline($title);
-    }
     
     /**
      * Add headline
@@ -130,6 +104,12 @@ class DebtorPdf
     {
         $this->doc->setX(0);
         $this->doc->addText($this->doc->get('x'), $this->doc->get('y'), $this->doc->get("font_size") + 8, $title);
+
+        $this->doc->setY('-' . $this->doc->get("font_spacing"));
+
+        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
+            $this->doc->nextPage(true);
+        }
     }
     
     /**
@@ -222,7 +202,11 @@ class DebtorPdf
      * @return void
      */    
     function addReceiver($contact)
-    {    
+    {
+        $this->doc->setY('-5');
+        
+        $this->box_top = $this->doc->get('y'); // $pointY;    
+    
         $this->doc->setY('-' . $this->doc->get("font_spacing")); // $pointY -= self::BOX_PADDING_TOP;
         $this->doc->addText($this->doc->get('x') + self::BOX_WIDTH - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Modtager");
         $this->doc->setY('-' . self::BOX_PADDING_TOP);
@@ -291,7 +275,7 @@ class DebtorPdf
         }
 
         if (!is_object($parameter['contact']->address)) {
-            throw new Exception("Arrayet in 2nd parameter does not contain contact object with Address");
+            throw new Exception("2nd parameter of array does not contain contact object with Address");
         }
 
         // adding payments
@@ -318,7 +302,7 @@ class DebtorPdf
             $this->doc->setColor(0, 0, 0);
             $this->doc->filledRectangle($this->doc->get("margin_left"), $this->doc->get('y') - $this->doc->get("font_spacing") - 4, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $this->doc->get("font_spacing") + 4);
             $this->doc->setColor(1, 1, 1);
-            $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2)); // $pointY -= $this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2;
+            $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2)); 
             $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") + 2, "Indbetalingsoplysninger");
             $this->doc->setColor(0, 0, 0);
             $this->doc->setY('-'.($this->doc->get("font_padding_bottom") + 2)); // $pointY -= $this->doc->get("font_padding_bottom") + 2;
@@ -542,26 +526,24 @@ class DebtorPdf
     {
         $this->doc->setY('-40'); // space to the product list
 
-        $apointX["varenr"] = 80;
-        $apointX["tekst"] = 90;
-        $apointX["antal"] = $this->doc->get("right_margin_position") - 150;
-        $apointX["enhed"] = $this->doc->get('right_margin_position') - 145;
-        $apointX["pris"] = $this->doc->get('right_margin_position') - 60;
-        $apointX["beloeb"] = $this->doc->get('right_margin_position');
-        $apointX["tekst_width"] = $this->doc->get('right_margin_position') - $this->doc->get("margin_left") - $apointX["tekst"] - 60;
-        $apointX["tekst_width_small"] = $apointX["antal"] - $this->doc->get("margin_left") - $apointX["tekst"];
+        $this->apointX["varenr"] = 80;
+        $this->apointX["tekst"] = 90;
+        $this->apointX["antal"] = $this->doc->get("right_margin_position") - 150;
+        $this->apointX["enhed"] = $this->doc->get('right_margin_position') - 145;
+        $this->apointX["pris"] = $this->doc->get('right_margin_position') - 60;
+        $this->apointX["beloeb"] = $this->doc->get('right_margin_position');
+        $this->apointX["tekst_width"] = $this->doc->get('right_margin_position') - $this->doc->get("margin_left") - $this->apointX["tekst"] - 60;
+        $this->apointX["tekst_width_small"] = $this->apointX["antal"] - $this->doc->get("margin_left") - $this->apointX["tekst"];
 
-        $this->doc->addText($apointX["varenr"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Varenr."), $this->doc->get('y'), $this->doc->get("font_size"), "Varenr.");
-        $this->doc->addText($apointX["tekst"], $this->doc->get('y'), $this->doc->get("font_size"), "Tekst");
-        $this->doc->addText($apointX["antal"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Antal"), $this->doc->get('y'), $this->doc->get("font_size"), "Antal");
-        $this->doc->addText($apointX["pris"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Pris"), $this->doc->get('y'), $this->doc->get("font_size"), "Pris");
-        $this->doc->addText($apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Beløb") -3, $this->doc->get('y'), $this->doc->get("font_size"), "Beløb");
+        $this->doc->addText($this->apointX["varenr"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Varenr."), $this->doc->get('y'), $this->doc->get("font_size"), "Varenr.");
+        $this->doc->addText($this->apointX["tekst"], $this->doc->get('y'), $this->doc->get("font_size"), "Tekst");
+        $this->doc->addText($this->apointX["antal"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Antal"), $this->doc->get('y'), $this->doc->get("font_size"), "Antal");
+        $this->doc->addText($this->apointX["pris"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Pris"), $this->doc->get('y'), $this->doc->get("font_size"), "Pris");
+        $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "Beløb") -3, $this->doc->get('y'), $this->doc->get("font_size"), "Beløb");
 
         $this->doc->setY('-'.($this->doc->get("font_spacing") - $this->doc->get("font_size")));
 
         $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
-    
-        return $apointX;
     }
     
     /**
@@ -569,7 +551,7 @@ class DebtorPdf
      *
      * @return array with points
      */    
-    function addProductsList($debtor, $items, $apointX)
+    function addProductsList($debtor, $items)
     {
         $total = 0;
         if ($debtor->getCurrency()) {
@@ -594,15 +576,15 @@ class DebtorPdf
             }
 
             $this->doc->setY('-'.($this->doc->get("font_padding_top") + $this->doc->get("font_size")));
-            $this->doc->addText($apointX["varenr"] - $this->doc->getTextWidth($this->doc->get("font_size"), $items[$i]["number"]), $this->doc->get('y'), $this->doc->get("font_size"), $items[$i]["number"]);
+            $this->doc->addText($this->apointX["varenr"] - $this->doc->getTextWidth($this->doc->get("font_size"), $items[$i]["number"]), $this->doc->get('y'), $this->doc->get("font_size"), $items[$i]["number"]);
 
             if ($items[$i]["unit"] != "") {
-                $this->doc->addText($apointX["antal"] - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($items[$i]["quantity"], 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($items[$i]["quantity"], 2, ",", "."));
-                $this->doc->addText($apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), $this->translation->get($items[$i]["unit"], 'product'));
+                $this->doc->addText($this->apointX["antal"] - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($items[$i]["quantity"], 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($items[$i]["quantity"], 2, ",", "."));
+                $this->doc->addText($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), $this->translation->get($items[$i]["unit"], 'product'));
                 if ($debtor->getCurrency()) {
-                    $this->doc->addText($apointX["pris"] - $this->doc->getTextWidth($this->doc->get("font_size"), $items[$i]["price_currency"]->getAsLocale('da_dk', 2)), $this->doc->get('y'), $this->doc->get("font_size"), $items[$i]["price_currency"]->getAsLocale('da_dk', 2));
+                    $this->doc->addText($this->apointX["pris"] - $this->doc->getTextWidth($this->doc->get("font_size"), $items[$i]["price_currency"]->getAsLocale('da_dk', 2)), $this->doc->get('y'), $this->doc->get("font_size"), $items[$i]["price_currency"]->getAsLocale('da_dk', 2));
                 } else {
-                    $this->doc->addText($apointX["pris"] - $this->doc->getTextWidth($this->doc->get("font_size"), $items[$i]["price"]->getAsLocale('da_dk', 2)), $this->doc->get('y'), $this->doc->get("font_size"), $items[$i]["price"]->getAsLocale('da_dk', 2));
+                    $this->doc->addText($this->apointX["pris"] - $this->doc->getTextWidth($this->doc->get("font_size"), $items[$i]["price"]->getAsLocale('da_dk', 2)), $this->doc->get('y'), $this->doc->get("font_size"), $items[$i]["price"]->getAsLocale('da_dk', 2));
                 }
             }
             if ($debtor->getCurrency()) {
@@ -612,7 +594,7 @@ class DebtorPdf
             }
             $total += $amount;
 
-            $this->doc->addText($apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($amount, 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
+            $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($amount, 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($amount, 2, ",", "."));
 
             $tekst = $items[$i]["name"];
             $first = true;
@@ -631,7 +613,7 @@ class DebtorPdf
                 $first = false;
 
 
-                $tekst = $this->doc->addTextWrap($apointX["tekst"], $this->doc->get('y'), $apointX["tekst_width_small"], $this->doc->get("font_size"), $tekst);
+                $tekst = $this->doc->addTextWrap($this->apointX["tekst"], $this->doc->get('y'), $this->apointX["tekst_width_small"], $this->doc->get("font_size"), $tekst);
                 $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
                 if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
                     $this->doc->nextPage(true);
@@ -669,7 +651,7 @@ class DebtorPdf
                             }
 
                             $this->doc->setY('-'.($this->doc->get("font_padding_top") + $this->doc->get("font_size")));
-                            $line = $this->doc->addTextWrap($apointX["tekst"], $this->doc->get('y') + 1, $apointX["tekst_width"], $this->doc->get("font_size"), $line); // Ups Ups, hvor kommer '+ 1' fra - jo ser du, ellers kappes det nederste af teksten!
+                            $line = $this->doc->addTextWrap($this->apointX["tekst"], $this->doc->get('y') + 1, $this->apointX["tekst_width"], $this->doc->get("font_size"), $line); // Ups Ups, hvor kommer '+ 1' fra - jo ser du, ellers kappes det nederste af teksten!
                             $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
 
                             if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
@@ -678,7 +660,6 @@ class DebtorPdf
                         }
                     }
                 }
-
             }
 
             if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
@@ -700,8 +681,8 @@ class DebtorPdf
                 $this->doc->setLineStyle(0.5);
                 $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
                 $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top")));
-                $this->doc->addText($apointX["tekst"], $this->doc->get('y'), $this->doc->get("font_size"), "<b>25% moms af ".number_format($total, 2, ",", ".")."</b>");
-                $this->doc->addText($apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "<b>".number_format($total * 0.25, 2, ",", ".")."</b>"), $this->doc->get('y'), $this->doc->get("font_size"), "<b>".number_format($total * 0.25, 2, ",", ".")."</b>");
+                $this->doc->addText($this->apointX["tekst"], $this->doc->get('y'), $this->doc->get("font_size"), "<b>25% moms af ".number_format($total, 2, ",", ".")."</b>");
+                $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "<b>".number_format($total * 0.25, 2, ",", ".")."</b>"), $this->doc->get('y'), $this->doc->get("font_size"), "<b>".number_format($total * 0.25, 2, ",", ".")."</b>");
                 $total = $total * 1.25;
                 $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
                 $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
@@ -712,11 +693,14 @@ class DebtorPdf
             ($bg_color == 1) ? $bg_color = 0 : $bg_color = 1;
         }
 
-
         if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
             $this->doc->nextPage();
         }
-
+        $this->addTotal($debtor);   
+    }
+    
+    private function addTotal($debtor)
+    {
         $this->doc->setLineStyle(1);
         $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
         if ($debtor->getCurrency()) {
@@ -729,8 +713,8 @@ class DebtorPdf
 
         if ($debtor->get("round_off") == 1 && $debtor->get("type") == "invoice" && $total != $debtor_total) {
             $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top")));
-            $this->doc->addText($apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), "I alt:");
-            $this->doc->addText($apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($total, 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($total, 2, ",", "."));
+            $this->doc->addText($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), "I alt:");
+            $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($total, 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($total, 2, ",", "."));
             $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
 
             $total_text = "Total afrundet ".$currency_iso_code.":";
@@ -743,9 +727,9 @@ class DebtorPdf
         }
 
         $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top")));
-        $this->doc->addText($apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$total_text."</b>");
-        $this->doc->addText($apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>"), $this->doc->get('y'), $this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>");
+        $this->doc->addText($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$total_text."</b>");
+        $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>"), $this->doc->get('y'), $this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>");
         $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
-        $this->doc->line($apointX["enhed"], $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));    
+        $this->doc->line($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y')); 
     }
 }

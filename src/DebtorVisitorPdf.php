@@ -73,19 +73,21 @@ class DebtorVisitorPdf extends DebtorPdf
             $this->doc->addHeader($this->file->get('file_uri_pdf'));
         }
 
-        // WHAT IS THIS FOR?
-        $this->doc->setY('-5');
-
-        // Sender and Reciever.
+        // Reciever.
         $contact = $debtor->contact->address->get();
         if (is_object($debtor->contact_person)) {
             $contact["attention_to"] = $debtor->contact_person->get("name");
         }
         $contact['number'] = $debtor->contact->get('number');
+        
+        $this->addReceiver($contact);
 
+        // Sender.
         $intranet_address = $debtor->getIntranetAddress();
         $intranet = $intranet_address->get();
         $intranet = array_merge($intranet, $debtor->getContactInformation());
+
+        $this->addSender($intranet);
 
         $this->docinfo[0]["label"] = $this->translation->get($debtor->get('type').' number').":";
         $this->docinfo[0]["value"] = $debtor->get("number");
@@ -96,26 +98,21 @@ class DebtorVisitorPdf extends DebtorPdf
             $this->docinfo[2]["value"] = $debtor->get("dk_due_date");
         }
 
+        // Add debtor data.
+        $this->addDebtorData($this->docinfo);
+
+        // Add headline
         $title = $this->translation->get($debtor->get('type'));
+        $this->addHeadline($title);
 
-        $this->addRecieverAndSender($contact, $intranet, $title, $this->docinfo);
-
-        // WHAT IS THIS FOR?
-        $this->doc->setY('-'.$this->doc->get("font_spacing"));
-
-        // WHAT IS THIS FOR?
-        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
-            $this->doc->nextPage(true);
-        }
-
+        // Add Message.
         if ($debtor->get('message')) {
             $this->addMessage($debtor->get('message'));
         }
 
         // Products.
-        $apointX = $this->addProductListHeadlines();
-        $items = $debtor->getItems();
-        $this->addProductsList($debtor, $items, $apointX);
+        $this->addProductListHeadlines();
+        $this->addProductsList($debtor, $debtor->getItems());
         
         // Payment condition.
         if ($debtor->get("type") == "invoice" || $debtor->get("type") == "order") {
