@@ -56,7 +56,16 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor->contact_person = new FakeContactPerson;
         return $debtor;
     }
-    
+
+    function createDebtorWithNoAmount()
+    {
+        $debtor = new FakeDebtorNoAmount();
+        $debtor->contact = new FakeContact;
+        $debtor->contact->address = new Stub_Address;
+        $debtor->contact_person = new FakeContactPerson;
+        return $debtor;
+    }
+
     /////////////////////////////////////////////////////////////////////////
 
     function testConstruct()
@@ -125,8 +134,8 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(strlen($expected), strlen($actual));
     }
-    
- function testDebtorWithLongText()
+
+    function testDebtorWithLongText()
     {
         $pdf = $this->createPdf();
         $debtor = $this->createDebtorWithLongMessage();
@@ -137,7 +146,18 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(strlen($expected), strlen($actual));
     }    
+    
+    function testDebtorNoAmount()
+    {
+        $pdf = $this->createPdf();
+        $debtor = $this->createDebtorWithNoAmount();
+        $pdf->visit($debtor);
+        $pdf->output('file', $this->path_to_debtor);
+        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_no_amount.pdf', 1);
+        $actual = file_get_contents($this->path_to_debtor);
 
+        $this->assertEquals(strlen($expected), strlen($actual));
+    }
     /*
     function testVisitWithOnlinePayment()
     {

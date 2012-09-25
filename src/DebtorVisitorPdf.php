@@ -89,6 +89,7 @@ class DebtorVisitorPdf extends DebtorPdf
 
         $this->addSender($intranet);
 
+        // Add debtor data.
         $this->docinfo[0]["label"] = $this->translation->get($debtor->get('type').' number').":";
         $this->docinfo[0]["value"] = $debtor->get("number");
         $this->docinfo[1]["label"] = "Dato:";
@@ -98,7 +99,6 @@ class DebtorVisitorPdf extends DebtorPdf
             $this->docinfo[2]["value"] = $debtor->get("dk_due_date");
         }
 
-        // Add debtor data.
         $this->addDebtorData($this->docinfo);
 
         // Add headline

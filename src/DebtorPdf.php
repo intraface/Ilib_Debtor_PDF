@@ -209,16 +209,16 @@ class DebtorPdf
         
         $this->box_top = $this->doc->get('y'); // $pointY;    
     
-        $this->doc->setY('-' . $this->doc->get("font_spacing")); // $pointY -= self::BOX_PADDING_TOP;
+        $this->doc->setY('-' . $this->doc->get("font_spacing"));
         $this->doc->addText($this->doc->get('x') + self::BOX_WIDTH - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Modtager");
         $this->doc->setY('-' . self::BOX_PADDING_TOP);
         $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$contact["name"]."</b>");
 
-        $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
+        $this->doc->setY('-' . $this->doc->get("font_spacing"));
 
         if (isset($contact["attention_to"]) && $contact["attention_to"] != "") {
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Att: ".$contact["attention_to"]);
-            $this->doc->setY('-'.$this->doc->get('font_spacing')); // $pointY -= $this->doc->get("font_spacing");
+            $this->doc->setY('-' . $this->doc->get('font_spacing'));
         }
 
         $line = explode("\r\n", $contact["address"]);
@@ -233,7 +233,7 @@ class DebtorPdf
 
         if (isset($contact["country"]) && $contact["country"] != "") {
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $contact["country"]);
-            $this->doc->setY('-'.$this->doc->get('font_spacing')); // $pointY -= $this->doc->get("font_spacing");
+            $this->doc->setY('-'.$this->doc->get('font_spacing'));
         }
 
         $this->doc->setY('-'.$this->doc->get("font_spacing"));
