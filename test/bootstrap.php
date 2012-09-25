@@ -8,6 +8,8 @@ require_once 'Document/Cpdf.php';
 require_once dirname(__FILE__) . '/../src/DebtorVisitorPdf.php';
 require_once dirname(__FILE__) .'/stubs/Debtor.php';
 require_once dirname(__FILE__) .'/stubs/DebtorLongProductText.php';
+require_once dirname(__FILE__) .'/stubs/DebtorManyProducts.php';
+require_once dirname(__FILE__) .'/stubs/DebtorLongMessage.php';
 require_once dirname(__FILE__) .'/stubs/Contact.php';
 require_once dirname(__FILE__) .'/stubs/ContactPerson.php';
 require_once dirname(__FILE__) .'/stubs/Translation.php';
