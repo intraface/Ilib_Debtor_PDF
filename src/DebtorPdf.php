@@ -268,7 +268,7 @@ class DebtorPdf
      * @param array   $parameter      array("contact" => (object), "payment_text" => (string), "amount" => (double), "due_date" => (string), "girocode" => (string));
      * @param array   $payment_info   The payment information
      *
-     * @return The y-coordinate after payment condition has been added
+     * @return void
      */
     function addPaymentCondition($payment_method, $parameter, $payment_info = array())
     {
@@ -317,7 +317,6 @@ class DebtorPdf
         } elseif ($payment_method == 3) {
             $this->addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
         }
-        return $this->doc->get('y');
     }
     
     function addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
@@ -369,7 +368,7 @@ class DebtorPdf
             $this->doc->setY('-'.$this->doc->get('font_spacing'));
             if ($i == 2) $i = count($line);
         }
-        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("postcode")." ".$parameter["contact"]->address->get("city"));
+        $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("postcode") . " " . $parameter["contact"]->address->get("city"));
 
         $this->doc->setValue('y', $payment_start); // Sets exact position
         $this->doc->setY('-7');
@@ -441,7 +440,7 @@ class DebtorPdf
 
          $this->doc->addText($this->doc->get('x') + $payment_left + 4, $this->doc->get('y'), $this->doc->get("font_size") - 4, "Regnr.:            Kontonr.:");
          $this->doc->setY('-'.($payment_line - 12));
-         $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_reg_number"]."       ".$payment_info["bank_account_number"]);
+         $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_reg_number"] . "       " . $payment_info["bank_account_number"]);
     }
     
     /**
@@ -693,10 +692,10 @@ class DebtorPdf
         if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
             $this->doc->nextPage();
         }
-        $this->addTotal($debtor);   
+        $this->addTotalAmount($debtor);   
     }
     
-    private function addTotal($debtor)
+    private function addTotalAmount($debtor)
     {
         $this->doc->setLineStyle(1);
         $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
@@ -714,18 +713,20 @@ class DebtorPdf
             $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($total, 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($total, 2, ",", "."));
             $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
 
-            $total_text = "Total afrundet ".$currency_iso_code.":";
+            $total_text = "Total afrundet " . $currency_iso_code . ":";
         } else {
-            $total_text = "Total ".$currency_iso_code.":";
+            $total_text = "Total " . $currency_iso_code . ":";
         }
 
         if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
             $this->doc->nextPage(true);
         }
 
+        $debtor_total = "<b>" . number_format($debtor_total, 2, ",", ".")."</b>";
+
         $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top")));
         $this->doc->addText($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$total_text."</b>");
-        $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>"), $this->doc->get('y'), $this->doc->get("font_size"), "<b>".number_format($debtor_total, 2, ",", ".")."</b>");
+        $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), $debtor_total), $this->doc->get('y'), $this->doc->get("font_size"), $debtor_total);
         $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
         $this->doc->line($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y')); 
     }
