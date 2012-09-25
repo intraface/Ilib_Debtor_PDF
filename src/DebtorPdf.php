@@ -107,9 +107,11 @@ class DebtorPdf
 
         $this->doc->setY('-' . $this->doc->get("font_spacing"));
 
+        /*
         if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
             $this->doc->nextPage(true);
         }
+        */
     }
     
     /**
