@@ -281,43 +281,41 @@ class DebtorPdf
         }
 
         // adding payments
-        $amount = $this->addPayments($parameter);
+        $amount = $this->addPayments($parameter['payment'], $parameter['payment_online'], $parameter['amount']);
 
         // Payment information
         if ($amount <= 0) {
-            $payment_method = 0; // if amount i 0 no payment information
+           return;
         }
 
-        if ($payment_method > 0) {
-            $this->doc->setY('-20'); // $pointY -= 20; // Distance to payment info
+        $this->doc->setY('-20'); // Distance to payment info
 
-            $payment_line = 26;
-            $payment_left = 230;
-            $payment_right = $this->doc->get("right_margin_position") - $this->doc->get("margin_left") - $payment_left;
+        $payment_line = 26;
+        $payment_left = 230;
+        $payment_right = $this->doc->get("right_margin_position") - $this->doc->get("margin_left") - $payment_left;
 
-            if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") + 4 + $payment_line * 3) {
-                $this->doc->nextPage(true);
-            }
+        if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") + 4 + $payment_line * 3) {
+            $this->doc->nextPage(true);
+        }
 
-            // Black bar
-            $this->doc->setLineStyle(1);
-            $this->doc->setColor(0, 0, 0);
-            $this->doc->filledRectangle($this->doc->get("margin_left"), $this->doc->get('y') - $this->doc->get("font_spacing") - 4, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $this->doc->get("font_spacing") + 4);
-            $this->doc->setColor(1, 1, 1);
-            $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2)); 
-            $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") + 2, "Indbetalingsoplysninger");
-            $this->doc->setColor(0, 0, 0);
-            $this->doc->setY('-'.($this->doc->get("font_padding_bottom") + 2)); // $pointY -= $this->doc->get("font_padding_bottom") + 2;
+        // Black bar
+        $this->doc->setLineStyle(1);
+        $this->doc->setColor(0, 0, 0);
+        $this->doc->filledRectangle($this->doc->get("margin_left"), $this->doc->get('y') - $this->doc->get("font_spacing") - 4, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $this->doc->get("font_spacing") + 4);
+        $this->doc->setColor(1, 1, 1);
+        $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2)); 
+        $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") + 2, "Indbetalingsoplysninger");
+        $this->doc->setColor(0, 0, 0);
+        $this->doc->setY('-'.($this->doc->get("font_padding_bottom") + 2)); 
 
-            $payment_start = $this->doc->get('y');
+        $payment_start = $this->doc->get('y');
 
-            if ($payment_method == 1) {
-                $this->addPaymentBankTransfer($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
-            } elseif ($payment_method == 2) {
-                $this->addPaymentGiroaccount($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
-            } elseif ($payment_method == 3) {
-                $this->addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
-            }
+        if ($payment_method == 1) {
+            $this->addPaymentBankTransfer($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
+        } elseif ($payment_method == 2) {
+            $this->addPaymentGiroaccount($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
+        } elseif ($payment_method == 3) {
+            $this->addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
         }
         return $this->doc->get('y');
     }
@@ -453,23 +451,23 @@ class DebtorPdf
      *
      * @return void
      */    
-    function addPayments($parameter)
+    function addPayments($payment = 0, $payment_online = 0, $amount = 0)
     {
-        if (isset($parameter['payment']) AND $parameter['payment'] != 0 OR isset($parameter['payment_online']) AND $parameter['payment_online'] != 0) {
+        if ($payment != 0 OR $payment_online != 0) {
             $this->doc->setY('-20');
 
-            if (isset($parameter['payment']) AND $parameter['payment'] != 0) {
+            if ($payment != 0) {
                 $this->doc->setLineStyle(1.5);
                 $this->doc->setColor(0, 0, 0);
                 $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get("right_margin_position"), $this->doc->get('y'));
                 $this->doc->setY('-'.$this->doc->get("font_padding_top"));
                 $this->doc->setY('-'.$this->doc->get("font_size"));
                 $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size"), "Betalt");
-                $this->doc->addText($this->doc->get("right_margin_position") - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($parameter['payment'], 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($parameter['payment'], 2, ",", "."));
+                $this->doc->addText($this->doc->get("right_margin_position") - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($payment, 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($payment, 2, ",", "."));
                 $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
             }
 
-            if (isset($parameter['payment_online']) AND $parameter['payment_online'] != 0) {
+            if ($payment_online != 0) {
                 $this->doc->setLineStyle(1.5);
                 $this->doc->setColor(0, 0, 0);
                 $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get("right_margin_position"), $this->doc->get('y'));
@@ -477,17 +475,14 @@ class DebtorPdf
                 $this->doc->setY('-'.$this->doc->get("font_padding_top"));
                 $this->doc->setY('-'.$this->doc->get("font_size"));
                 $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size"), "Ventende betalinger");
-                $this->doc->addText($this->doc->get("right_margin_position") - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($parameter['payment_online'], 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($parameter['payment_online'], 2, ",", "."));
+                $this->doc->addText($this->doc->get("right_margin_position") - $this->doc->getTextWidth($this->doc->get("font_size"), number_format($payment_online, 2, ",", ".")), $this->doc->get('y'), $this->doc->get("font_size"), number_format($payment_online, 2, ",", "."));
                 $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
             }
 
             $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get("right_margin_position"), $this->doc->get('y'));
         }
 
-        if (!isset($parameter['payment_online'])) {
-            $parameter['payment_online'] = 0;
-        }
-        return $amount = $parameter["amount"] - $parameter['payment_online'] - $parameter['payment'];    
+        return $amount = $amount - $payment_online - $payment;    
     }
 
     /**
