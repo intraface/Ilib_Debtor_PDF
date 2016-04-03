@@ -5,6 +5,8 @@ php:
 install:
   - composer self-update
   - composer install --no-interaction
+before_script:
+  - mkdir ./test/temp
 script:
   - phpunit ./test
   - ./vendor/bin/phpcs --standard=phpcs.xml src
