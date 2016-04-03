@@ -12,6 +12,8 @@
  * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 
+require_once dirname(__FILE__) . '/LegacyCpdf.php';
+
 /**
  * PDF maker for Intraface
  *
@@ -24,7 +26,7 @@
  * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
  * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
-class Intraface_Pdf extends Document_Cpdf
+class Intraface_Pdf extends LegacyCpdf
 {
     protected $value;
     protected $page;
@@ -85,7 +87,7 @@ class Intraface_Pdf extends Document_Cpdf
     private function _calculateDynamicValues()
     {
         // Sets values based on the predefined values.
-        $this->value['right_margin_position'] = $this->page_width - $this->value['margin_right']; // content_width from 0 to right margen        
+        $this->value['right_margin_position'] = $this->page_width - $this->value['margin_right']; // content_width from 0 to right margen
         $this->value['top_margin_position'] = $this->page_height - $this->value['margin_top']; // content_height
 
         $this->value['content_width'] = $this->page_width - $this->value['margin_right'] - $this->value['margin_left']; // content_width fom 0 to right margen
@@ -171,7 +173,8 @@ class Intraface_Pdf extends Document_Cpdf
         $header = parent::openObject();
         $size = getImageSize($headerImg); // array(0 => width, 1 => height)
 
-        $height = $this->get('header_height');;
+        $height = $this->get('header_height');
+        ;
         $width = $size[0] * ($height/$size[1]);
 
         if ($width > $this->get('content_width')) {

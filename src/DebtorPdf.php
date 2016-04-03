@@ -33,7 +33,7 @@ class DebtorPdf
     protected $translation;
     protected $doc;
     protected $box_height;
-    protected $box_top;   
+    protected $box_top;
     protected $apointX;
     const BOX_PADDING_TOP = 8;
     const BOX_PADDING_BOTTOM = 9;
@@ -79,16 +79,16 @@ class DebtorPdf
     function output($type = 'string', $filename = 'debtor.pdf')
     {
         switch ($type) {
-        case 'string':
-            return $this->doc->output();
+            case 'string':
+                return $this->doc->output();
             break;
-        case 'file':
-            $data = $this->doc->output();
-            return $this->doc->writeDocument($data, $filename);
+            case 'file':
+                $data = $this->doc->output();
+                return $this->doc->writeDocument($data, $filename);
             break;
-        case 'stream':
-        default:
-            return $this->doc->stream();
+            case 'stream':
+            default:
+                return $this->doc->stream();
             break;
         }
     }
@@ -99,7 +99,7 @@ class DebtorPdf
      * @param string $title Title to show on the pdf
      *
      * @return void
-     */    
+     */
     function addHeadline($title)
     {
         $this->doc->setX(0);
@@ -120,7 +120,7 @@ class DebtorPdf
      * @param array $docinfo Info about the debtor, e.g. invoice date and number
      *
      * @return void
-     */    
+     */
     function addDebtorData(array $docinfo)
     {
         if (is_array($docinfo) && count($docinfo) > 0) {
@@ -139,7 +139,7 @@ class DebtorPdf
             $this->doc->roundRectangle($this->doc->get('x'), $this->doc->get('y'), $this->doc->get('right_margin_position') - $this->doc->get('x'), $box_small_height, 10);
         } else {
             $this->doc->setY($this->doc->get("font_size") + 12); // $pointY = $this->doc->get("font_size") + 12;
-        }    
+        }
     }
 
     /**
@@ -148,7 +148,7 @@ class DebtorPdf
      * @param array $intranet Info about the sender
      *
      * @return void
-     */    
+     */
     function addSender(array $intranet)
     {
         if (is_array($intranet) && count($intranet) > 0) {
@@ -165,7 +165,9 @@ class DebtorPdf
             for ($i = 0; $i < count($line); $i++) {
                 $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
                 $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
-                if ($i == 2) $i = count($line);
+                if ($i == 2) {
+                    $i = count($line);
+                }
             }
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["postcode"]." ".$intranet["city"]);
             $this->doc->setY('-'.($this->doc->get("font_spacing") * 2)); // $pointY -= $this->doc->get("font_spacing") * 2;
@@ -174,7 +176,7 @@ class DebtorPdf
             $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["cvr"]);
             $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
 
-            if (!empty($intranet["contact_person"]) AND $intranet['contact_person'] != $intranet["name"]) {
+            if (!empty($intranet["contact_person"]) and $intranet['contact_person'] != $intranet["name"]) {
                 $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Kontakt:");
                 $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["contact_person"]);
                 $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
@@ -202,12 +204,12 @@ class DebtorPdf
      * @param array $contact Information about the receiver
      *
      * @return void
-     */    
+     */
     function addReceiver($contact)
     {
         $this->doc->setY('-5');
         
-        $this->box_top = $this->doc->get('y'); // $pointY;    
+        $this->box_top = $this->doc->get('y'); // $pointY;
     
         $this->doc->setY('-' . $this->doc->get("font_spacing"));
         $this->doc->addText($this->doc->get('x') + self::BOX_WIDTH - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Modtager");
@@ -226,7 +228,9 @@ class DebtorPdf
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
             $this->doc->setY('-'.$this->doc->get("font_spacing"));
 
-            if ($i == 2) $i = count($line);
+            if ($i == 2) {
+                $i = count($line);
+            }
         }
         $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $contact["postcode"]." ".$contact["city"]);
         $this->doc->setY('-'.$this->doc->get("font_spacing"));
@@ -285,7 +289,7 @@ class DebtorPdf
 
         // Payment information
         if ($amount <= 0) {
-           return;
+            return;
         }
 
         $this->doc->setY('-20'); // Distance to payment info
@@ -303,10 +307,10 @@ class DebtorPdf
         $this->doc->setColor(0, 0, 0);
         $this->doc->filledRectangle($this->doc->get("margin_left"), $this->doc->get('y') - $this->doc->get("font_spacing") - 4, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $this->doc->get("font_spacing") + 4);
         $this->doc->setColor(1, 1, 1);
-        $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2)); 
+        $this->doc->setY('-'.($this->doc->get("font_size") + $this->doc->get("font_padding_top") + 2));
         $this->doc->addText($this->doc->get('x') + 4, $this->doc->get('y'), $this->doc->get("font_size") + 2, "Indbetalingsoplysninger");
         $this->doc->setColor(0, 0, 0);
-        $this->doc->setY('-'.($this->doc->get("font_padding_bottom") + 2)); 
+        $this->doc->setY('-'.($this->doc->get("font_padding_bottom") + 2));
 
         $payment_start = $this->doc->get('y');
 
@@ -366,7 +370,9 @@ class DebtorPdf
         for ($i = 0; $i < count($line); $i++) {
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
             $this->doc->setY('-'.$this->doc->get('font_spacing'));
-            if ($i == 2) $i = count($line);
+            if ($i == 2) {
+                $i = count($line);
+            }
         }
         $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("postcode") . " " . $parameter["contact"]->address->get("city"));
 
@@ -399,7 +405,7 @@ class DebtorPdf
 
         // TODO change the - back to <> but it does not work right now
         $this_text = '+01-'.str_repeat(' ', 20).'+'.$payment_info['giro_account_number'].'-';
-        $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get('font_size'), $this_text);    
+        $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get('font_size'), $this_text);
     }
     
     function addPaymentBankTransfer($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
@@ -449,10 +455,10 @@ class DebtorPdf
      * @param array $parameter Adds info about payments
      *
      * @return void
-     */    
+     */
     function addPayments($payment = 0, $payment_online = 0, $amount = 0)
     {
-        if ($payment != 0 OR $payment_online != 0) {
+        if ($payment != 0 or $payment_online != 0) {
             $this->doc->setY('-20');
 
             if ($payment != 0) {
@@ -481,7 +487,7 @@ class DebtorPdf
             $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get("right_margin_position"), $this->doc->get('y'));
         }
 
-        return $amount = $amount - $payment_online - $payment;    
+        return $amount = $amount - $payment_online - $payment;
     }
 
     /**
@@ -494,7 +500,7 @@ class DebtorPdf
     function addMessage($message)
     {
         $text = explode("\r\n", $message);
-        foreach ($text AS $line) {
+        foreach ($text as $line) {
             if ($line == "") {
                 $this->doc->setY('-'.$this->doc->get("font_spacing"));
                 if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
@@ -510,14 +516,14 @@ class DebtorPdf
                     }
                 }
             }
-        }    
+        }
     }
 
     /**
      * Add product headlines to product table
      *
      * @return array with points
-     */    
+     */
     function addProductListHeadlines()
     {
         $this->doc->setY('-40'); // space to the product list
@@ -546,7 +552,7 @@ class DebtorPdf
      * Add product headlines to product table
      *
      * @return array with points
-     */    
+     */
     function addProductsList($debtor, $items)
     {
         $total = 0;
@@ -596,7 +602,6 @@ class DebtorPdf
             $first = true;
 
             while ($tekst != "") {
-
                 if (!$first) {
                     // first line has already got coloured
                     if ($bg_color == 1) {
@@ -626,7 +631,7 @@ class DebtorPdf
                 }
 
                 $desc_line = explode("\r\n", $items[$i]["description"]);
-                foreach ($desc_line AS $line) {
+                foreach ($desc_line as $line) {
                     if ($line == "") {
                         if ($bg_color == 1) {
                             $this->doc->setColor(0.8, 0.8, 0.8);
@@ -639,7 +644,6 @@ class DebtorPdf
                         }
                     } else {
                         while ($line != "") {
-
                             if ($bg_color == 1) {
                                 $this->doc->setColor(0.8, 0.8, 0.8);
                                 $this->doc->filledRectangle($this->doc->get("margin_left"), $this->doc->get('y') - $this->doc->get("font_spacing"), $this->doc->get('right_margin_position') - $this->doc->get("margin_left"), $this->doc->get("font_spacing"));
@@ -692,7 +696,7 @@ class DebtorPdf
         if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
             $this->doc->nextPage();
         }
-        $this->addTotalAmount($debtor);   
+        $this->addTotalAmount($debtor);
     }
     
     private function addTotalAmount($debtor)
@@ -728,6 +732,6 @@ class DebtorPdf
         $this->doc->addText($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get("font_size"), "<b>".$total_text."</b>");
         $this->doc->addText($this->apointX["beloeb"] - $this->doc->getTextWidth($this->doc->get("font_size"), $debtor_total), $this->doc->get('y'), $this->doc->get("font_size"), $debtor_total);
         $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
-        $this->doc->line($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y')); 
+        $this->doc->line($this->apointX["enhed"], $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
     }
 }

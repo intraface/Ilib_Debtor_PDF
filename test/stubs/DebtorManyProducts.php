@@ -1,7 +1,7 @@
 <?php
 class FakeDebtorManyProducts
 {
-    function __construct($payment_method = 2) 
+    function __construct($payment_method = 2)
     {
         $this->values = array(
             'id' => 1,
@@ -21,7 +21,7 @@ class FakeDebtorManyProducts
             'payment_method' => $payment_method);
     }
 
-    function getItems() 
+    function getItems()
     {
         $item[0] = array('id' => 1, 'name' => 'product 1', 'number' => 1, 'quantity' => 1, 'unit' => 'unit', 'price' => new Fake_Ilib_Variable_Float(100), 'description' => 'test product 1', 'vat' => 1, 'amount' => 125);
         $item[1] = array('id' => 2, 'name' => 'product 2', 'number' => 2, 'quantity' => 10, 'unit' => 'days', 'price' => new Fake_Ilib_Variable_Float(200), 'description' => 'test product 2', 'vat' => 0, 'amount' => 2000);
@@ -36,7 +36,7 @@ class FakeDebtorManyProducts
         $item[10] = array('id' => 2, 'name' => 'product 2', 'number' => 2, 'quantity' => 10, 'unit' => 'days', 'price' => new Fake_Ilib_Variable_Float(200), 'description' => 'test product 2', 'vat' => 0, 'amount' => 2000);
         $item[11] = array('id' => 2, 'name' => 'product 2', 'number' => 2, 'quantity' => 10, 'unit' => 'days', 'price' => new Fake_Ilib_Variable_Float(200), 'description' => 'test product 2', 'vat' => 0, 'amount' => 2000);
         $item[12] = array('id' => 2, 'name' => 'product 2', 'number' => 2, 'quantity' => 10, 'unit' => 'days', 'price' => new Fake_Ilib_Variable_Float(200), 'description' => 'test product 2', 'vat' => 0, 'amount' => 2000);
-        $item[13] = array('id' => 2, 'name' => 'product 2', 'number' => 2, 'quantity' => 10, 'unit' => 'days', 'price' => new Fake_Ilib_Variable_Float(200), 'description' => 'test product 2', 'vat' => 0, 'amount' => 2000);        
+        $item[13] = array('id' => 2, 'name' => 'product 2', 'number' => 2, 'quantity' => 10, 'unit' => 'days', 'price' => new Fake_Ilib_Variable_Float(200), 'description' => 'test product 2', 'vat' => 0, 'amount' => 2000);
         return $item;
     }
 
@@ -70,4 +70,3 @@ class FakeDebtorManyProducts
         return false;
     }
 }
-

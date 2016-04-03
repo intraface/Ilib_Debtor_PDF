@@ -2,10 +2,11 @@
 class DebtorPdfTest extends PHPUnit_Framework_TestCase
 {
     protected $path_to_debtor;
-    
+
     function setup()
     {
-        $this->path_to_debtor = TEST_PATH_TEMP . '/debtor.pdf';
+        $this->path_to_debtor = TEST_PATH_TEMP . '/' . $this->getName() . '.pdf';
+        $this->path_to_expected_debtor = dirname(__FILE__) .'/expected/' . $this->getName() . '.pdf';
         $this->tearDown();
     }
 
@@ -80,7 +81,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtor();
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor.pdf', 1);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -93,7 +94,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor->values['payment_total'] = 2125;
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_with_payment.pdf', 1);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -105,7 +106,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtorLongProductText();
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_with_long_text.pdf', 1);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -117,7 +118,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtor(1);
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_with_payment_banktransfer.pdf', 1);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -129,7 +130,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtorWithManyProducts();
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_many_products.pdf', 1);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -141,7 +142,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtorWithNoAmount();
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_no_amount.pdf', 1);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
@@ -153,11 +154,11 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtorWithLongMessage();
         $pdf->visit($debtor);
         $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents(dirname(__FILE__) .'/expected/debtor_long_message.pdf', 1);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
-    }        
+    }
     /*
     function testVisitWithOnlinePayment()
     {
@@ -173,4 +174,3 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
     }
     */
 }
-

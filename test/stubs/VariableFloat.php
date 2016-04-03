@@ -1,5 +1,5 @@
 <?php
-class Fake_Ilib_Variable_Float 
+class Fake_Ilib_Variable_Float
 {
     public $amount;
     
@@ -8,7 +8,7 @@ class Fake_Ilib_Variable_Float
         $this->amount = $amount;
     }
     
-    function getAsIso() 
+    function getAsIso()
     {
         return $this->amount;
     }
@@ -16,5 +16,5 @@ class Fake_Ilib_Variable_Float
     function getAsLocale()
     {
         return number_format((float)$this->amount, 2, ",", ".");
-    }   
+    }
 }

@@ -1,7 +1,7 @@
 <?php
 class FakeDebtorNoAmount
 {
-    function __construct($payment_method = 2) 
+    function __construct($payment_method = 2)
     {
         $this->values = array(
             'id' => 1,
@@ -21,7 +21,7 @@ class FakeDebtorNoAmount
             'payment_method' => $payment_method);
     }
 
-    function getItems() 
+    function getItems()
     {
         return array();
     }
@@ -56,4 +56,3 @@ class FakeDebtorNoAmount
         return false;
     }
 }
-

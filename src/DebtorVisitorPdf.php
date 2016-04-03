@@ -21,7 +21,7 @@
  * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
  * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
-require_once dirname(__FILE__) . '/DebtorPdf.php'; 
+require_once dirname(__FILE__) . '/DebtorPdf.php';
 
 /**
  * Creates a pdf of a debtor. The class implements the visitor pattern.
@@ -69,7 +69,7 @@ class DebtorVisitorPdf extends DebtorPdf
         $this->doc = $this->getDocument();
 
         // Header.
-        if (!empty($this->file) AND $this->file->get('id') > 0) {
+        if (!empty($this->file) and $this->file->get('id') > 0) {
             $this->doc->addHeader($this->file->get('file_uri_pdf'));
         }
 
@@ -135,7 +135,7 @@ class DebtorVisitorPdf extends DebtorPdf
             $onlinepayment->getDBQuery()->setFilter('belong_to', $debtor->get("type"));
             $onlinepayment->getDBQuery()->setFilter('belong_to_id', $debtor->get('id'));
             $onlinepayment->getDBQuery()->setFilter('status', 2);
-            foreach ($onlinepayment->getlist() AS $p) {
+            foreach ($onlinepayment->getlist() as $p) {
                 $parameter['payment_online'] += $p["amount"];
             }
         }
@@ -149,7 +149,7 @@ class DebtorVisitorPdf extends DebtorPdf
         }
 
         $text = explode("\r\n", $debtor->getInvoiceText());
-        foreach ($text AS $line) {
+        foreach ($text as $line) {
             if ($line == "") {
                 $this->doc->setY('-'.$this->doc->get("font_spacing"));
                 if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
@@ -165,6 +165,6 @@ class DebtorVisitorPdf extends DebtorPdf
                     }
                 }
             }
-        }    
+        }
     }
 }
