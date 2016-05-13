@@ -12,8 +12,6 @@
  * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 
-require_once dirname(__FILE__) . '/LegacyCpdf.php';
-
 /**
  * PDF maker for Intraface
  *
@@ -26,7 +24,7 @@ require_once dirname(__FILE__) . '/LegacyCpdf.php';
  * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
  * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
-class Intraface_Pdf extends LegacyCpdf
+class Intraface_Pdf extends Cezpdf
 {
     protected $value;
     protected $page;
@@ -65,7 +63,7 @@ class Intraface_Pdf extends LegacyCpdf
         // Table for the characters placements can be found here: http://www.fingertipsoft.com/3dkbd/ansitable.html
         // Table for their names is found here: http://www.gust.org.pl/fonty/qx-table2.htm
         // Notice that the placement of the characters are different in the two tables. Placement is correct in the first.
-        
+
         $diff = array(230 => 'ae',
                       198 => 'AE',
                       248 => 'oslash',
@@ -133,7 +131,7 @@ class Intraface_Pdf extends LegacyCpdf
         } elseif (is_string($value) && substr($value, 0, 1) == "-") {
             $this->value['x'] -= intval(substr($value, 1));
         } else {
-            throw new Exception('Ugyldig værdi i setX: '.$value);
+            throw new Exception('Unknown value in setX: '.$value);
         }
     }
 
@@ -146,14 +144,14 @@ class Intraface_Pdf extends LegacyCpdf
      */
     public function setY($value)
     {
-        if (is_int($value)) {
+        if (is_int($value) || is_float($value)) {
             $this->value['y'] = $this->page_height - $this->get('margin_top') - $value;
         } elseif (is_string($value) && substr($value, 0, 1) == "+") {
             $this->value['y'] += intval(substr($value, 1));
         } elseif (is_string($value) && substr($value, 0, 1) == "-") {
             $this->value['y'] -= intval(substr($value, 1));
         } else {
-            throw new Exception("Ugyldig værdi i setY: ".$value);
+            throw new Exception("Unknown value in setY: ".$value);
         }
     }
 
@@ -189,7 +187,7 @@ class Intraface_Pdf extends LegacyCpdf
     }
 
     /**
-     * create a round rectangle
+     * Create a round rectangle
      *
      * @param integer $x      The starting x point
      * @param integer $y      The starting y point
@@ -214,14 +212,28 @@ class Intraface_Pdf extends LegacyCpdf
     }
 
     /**
-     * Wrapper function to utf8 decode text
+     * Wrapper function
      *
      * @return void
      */
-    function addText($x, $y, $size, $text, $angle = 0, $wordSpaceAdjust = 0)
+    function addText($x, $y, $size, $text, $width = 0, $justification = 'left', $angle = 0, $wordSpaceAdjust = 0, $test = 0)
     {
-        $text = utf8_decode($text);
-        parent::addText($x, $y, $size, $text, $angle = 0, $wordSpaceAdjust = 0);
+        return parent::addText($x, $y, $size, $text, $width, $justification, $angle, $wordSpaceAdjust, $test);
+    }
+
+    /**
+     * Wrapper for deprecated function in Cpdf.
+     *
+     * Automatically wrap text in place.
+     *
+     * @return void
+     */
+    public function addTextWrap($x, $y, $width, $size, $text)
+    {
+        $this->y = $y + $size;
+        $options = array('justification' => 'full', 'aleft' => $x, 'aright' => $x + $width);
+        $new_y = parent::ezText($text, $size, $options);
+        return $new_y;
     }
 
     /**
@@ -234,7 +246,7 @@ class Intraface_Pdf extends LegacyCpdf
     public function nextPage($sub_text = false)
     {
         $text = "<i>Fortsættes på næste side...</i>";
-        
+
         if ($sub_text == true) {
             $this->addText($this->value['right_margin_position'] - $this->getTextWidth($this->value['font_size'], $text) - 30, $this->value["margin_bottom"] - $this->value['font_padding_top'] - $this->value['font_size'], $this->value['font_size'], $text);
         }

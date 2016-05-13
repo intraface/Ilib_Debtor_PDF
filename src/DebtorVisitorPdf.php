@@ -48,10 +48,8 @@ class DebtorVisitorPdf extends DebtorPdf
      *
      * @param object $translation Used to do the translation in the class
      * @param object $file        File to use for the header
-     *
-     * @return void
      */
-    function __construct($translation, $file = null)
+    public function __construct($translation, $file = null)
     {
         parent::__construct($translation, $file);
     }
@@ -64,7 +62,7 @@ class DebtorVisitorPdf extends DebtorPdf
      *
      * @return void
      */
-    function visit($debtor, $onlinepayment = null)
+    public function visit($debtor, $onlinepayment = null)
     {
         $this->doc = $this->getDocument();
 
@@ -79,7 +77,7 @@ class DebtorVisitorPdf extends DebtorPdf
             $contact["attention_to"] = $debtor->contact_person->get("name");
         }
         $contact['number'] = $debtor->contact->get('number');
-        
+
         $this->addReceiver($contact);
 
         // Sender.
@@ -113,14 +111,14 @@ class DebtorVisitorPdf extends DebtorPdf
         // Products.
         $this->addProductListHeadlines();
         $this->addProductsList($debtor, $debtor->getItems());
-        
+
         // Payment condition.
         if ($debtor->get("type") == "invoice" || $debtor->get("type") == "order") {
             $this->addPaymentConditionVisit($debtor, $onlinepayment);
         }
     }
-    
-    function addPaymentConditionVisit($debtor, $onlinepayment)
+
+    protected function addPaymentConditionVisit($debtor, $onlinepayment)
     {
         $parameter = array(
             "contact" => $debtor->contact,
@@ -148,6 +146,8 @@ class DebtorVisitorPdf extends DebtorPdf
             $this->doc->nextPage(true);
         }
 
+        $this->addMessage($debtor->getInvoiceText());
+        /*
         $text = explode("\r\n", $debtor->getInvoiceText());
         foreach ($text as $line) {
             if ($line == "") {
@@ -166,5 +166,6 @@ class DebtorVisitorPdf extends DebtorPdf
                 }
             }
         }
+        */
     }
 }
