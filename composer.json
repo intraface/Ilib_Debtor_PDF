@@ -18,10 +18,6 @@
         {
             "type": "git",
             "url": "https://github.com/intraface/Ilib_Variable.git"
-        },
-        {
-            "type": "svn",
-            "url": "https://svn.code.sf.net/p/pdf-php/code/trunk pdf-php-code"
         }
     ],
    "autoload": {
@@ -49,8 +45,8 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.2",
-        "intraface/variable": "*",
-        "randos/pdf-php": "*"
+        "intraface/variable": "dev-master",
+        "randos/pdf-php": "0.12.20"
     },
     "require-dev": {
         "phpunit/phpunit": "4.4.*",

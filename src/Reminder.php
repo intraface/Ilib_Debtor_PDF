@@ -68,7 +68,7 @@ class Intraface_modules_invoice_Pdf_Reminder extends Intraface_modules_debtor_Pd
                 while ($line != "") {
                     $this->doc->setY('-'.($this->doc->get("font_padding_top") + $this->doc->get("font_size")));
                     $line = $this->doc->addTextWrap($this->doc->get('x'), $this->doc->get('y'), $this->doc->get("right_margin_position") - $this->doc->get('x'), $this->doc->get("font_size"), $line); // $this->doc->get("right_margin_position") - $this->doc->get('x')
-              
+
                     $this->doc->setY('-'.$this->doc->get("font_padding_bottom"));
 
                     if ($this->doc->get('y') < $this->doc->get("margin_bottom") + $this->doc->get("font_spacing") * 2) {
@@ -196,8 +196,6 @@ class Intraface_modules_invoice_Pdf_Reminder extends Intraface_modules_debtor_Pd
             "due_date" => $reminder->get("dk_due_date"),
             "girocode" => $reminder->get("girocode"));
 
-
         $this->addPaymentCondition($reminder->get("payment_method_key"), $parameter, $reminder->getPaymentInformation());
-
     }
 }

@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8750f06e1e7d6fd579ce1aeba0d1440d",
-    "content-hash": "c7b74492aa7d82fe0d5d420f6bedaeaa",
+    "hash": "fb5c22c5f36f87888be74cd86b5ae518",
+    "content-hash": "572803a06f96680013033fdbcab20b88",
     "packages": [
         {
             "name": "intraface/variable",
@@ -52,11 +52,17 @@
         },
         {
             "name": "randos/pdf-php",
-            "version": "dev-trunk",
+            "version": "0.12.20",
             "source": {
-                "type": "svn",
-                "url": "https://svn.code.sf.net/p/pdf-php/code",
-                "reference": "/trunk/@319"
+                "type": "git",
+                "url": "https://github.com/rospdf/pdf-php.git",
+                "reference": "631551e3de822bb028942dcbeed37d6ecdf66888"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rospdf/pdf-php/zipball/631551e3de822bb028942dcbeed37d6ecdf66888",
+                "reference": "631551e3de822bb028942dcbeed37d6ecdf66888",
+                "shasum": ""
             },
             "require": {
                 "php": ">=5.3.2"
@@ -71,30 +77,30 @@
                     "src/Cezpdf.php"
                 ]
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-3.0"
             ],
             "authors": [
                 {
-                    "name": "Wayne Munro",
-                    "email": "pdf@ros.co.nz"
+                    "name": "Ole Koeckemann",
+                    "email": "ole1986@users.sourceforge.net",
+                    "role": "Developer"
                 },
                 {
                     "name": "Lars Olesen",
-                    "email": "lars@intraface.dk"
+                    "email": "lars@intraface.dk",
+                    "role": "Developer"
                 },
                 {
-                    "name": "Sune T. Jensen",
-                    "email": "sj@sunet.dk"
-                },
-                {
-                    "name": "Ole Koeckemann",
-                    "email": "ole1986@users.sourceforge.net"
+                    "name": "Wayne Munro",
+                    "email": "pdf@ros.co.nz",
+                    "role": "Inactive"
                 }
             ],
             "description": "The R&OS Pdf class supports the creation of PDF documents without any adiditional modules or extensions.",
-            "homepage": "http://pdf-php.sourceforge.net/",
-            "time": "2016-04-03 11:23:36"
+            "homepage": "https://github.com/ole1986/pdf-php",
+            "time": "2016-05-12 15:06:36"
         }
     ],
     "packages-dev": [
@@ -302,20 +308,23 @@
         },
         {
             "name": "phpunit/php-timer",
-            "version": "1.0.7",
+            "version": "1.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-timer.git",
-                "reference": "3e82f4e9fc92665fafd9157568e4dcb01d014e5b"
+                "reference": "38e9124049cf1a164f1e4537caf19c99bf1eb260"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-timer/zipball/3e82f4e9fc92665fafd9157568e4dcb01d014e5b",
-                "reference": "3e82f4e9fc92665fafd9157568e4dcb01d014e5b",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-timer/zipball/38e9124049cf1a164f1e4537caf19c99bf1eb260",
+                "reference": "38e9124049cf1a164f1e4537caf19c99bf1eb260",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4|~5"
             },
             "type": "library",
             "autoload": {
@@ -339,7 +348,7 @@
             "keywords": [
                 "timer"
             ],
-            "time": "2015-06-21 08:01:12"
+            "time": "2016-05-12 18:03:57"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -640,12 +649,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/environment.git",
-                "reference": "dc7a29032cf72b54f36dac15a1ca5b3a1b6029bf"
+                "reference": "2292b116f43c272ff4328083096114f84ea46a56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/dc7a29032cf72b54f36dac15a1ca5b3a1b6029bf",
-                "reference": "dc7a29032cf72b54f36dac15a1ca5b3a1b6029bf",
+                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/2292b116f43c272ff4328083096114f84ea46a56",
+                "reference": "2292b116f43c272ff4328083096114f84ea46a56",
                 "shasum": ""
             },
             "require": {
@@ -682,7 +691,7 @@
                 "environment",
                 "hhvm"
             ],
-            "time": "2016-02-26 18:40:46"
+            "time": "2016-05-04 07:59:13"
         },
         {
             "name": "sebastian/exporter",
@@ -896,12 +905,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "6936deb6f5a686612ffe929c9afb6628154dd57a"
+                "reference": "0434c489d21e402199fb0b4ab581af5009cb706d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/6936deb6f5a686612ffe929c9afb6628154dd57a",
-                "reference": "6936deb6f5a686612ffe929c9afb6628154dd57a",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/0434c489d21e402199fb0b4ab581af5009cb706d",
+                "reference": "0434c489d21e402199fb0b4ab581af5009cb706d",
                 "shasum": ""
             },
             "require": {
@@ -966,7 +975,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2016-03-29 23:50:15"
+            "time": "2016-05-12 04:41:00"
         },
         {
             "name": "symfony/yaml",
@@ -1020,7 +1029,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "intraface/variable": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
