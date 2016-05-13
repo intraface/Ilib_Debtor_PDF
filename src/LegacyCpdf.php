@@ -5,16 +5,15 @@
  * Note that the companion class Document_CezPdf can be used to extend this class and
  * simplify the creation of documents.
  *
- * @category Documents
- * @package  Document_Cpdf
- * @author   Wayne Munro (inactive) <pdf@ros.co.nz>
- * @author   Lars Olesen <lars@legestue.net>
- * @author   Sune Jensen <sj@sunet.dk>
- * @author   Ole K <ole1986@users.sourceforge.net>
+ * @category  Documents
+ * @package   Document_Cpdf
+ * @author    Wayne Munro (inactive) <pdf@ros.co.nz>
+ * @author    Lars Olesen <lars@legestue.net>
+ * @author    Ole K <ole1986@users.sourceforge.net>
  * @copyright 2007 - 2013 The authors
- * @license   GPL http://www.opensource.org/licenses/gpl-license.php
- * @version  0.11.8
- * @link     http://pdf-php.sf.net
+ * @license   GPL-3.0 http://www.opensource.org/licenses/gpl-license.php
+ * @version   0.11.8
+ * @link      http://pdf-php.sf.net
  */
 
 class LegacyCpdf

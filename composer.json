@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Library for creating PDF's for debtors",
     "homepage": "https://github.com/intraface/Ilib_Debtor_PDF",
-    "license": "MIT",
+    "license": "GPL-3.0",
     "authors": [
         {
             "name": "Lars Olesen",
@@ -45,8 +45,7 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.2",
-        "intraface/variable": "dev-master",
-        "randos/pdf-php": "0.12.20"
+        "intraface/variable": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "4.4.*",
