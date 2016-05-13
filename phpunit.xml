@@ -15,7 +15,7 @@
         </testsuite>
     </testsuites>
     <php>
-        <const name="TEST_PATH_TEMP" value="./temp"/>
+        <const name="TEST_PATH_TEMP" value="./test/temp"/>
         <ini name="memory_limit" value="2048M"/>
     </php>
     <filter>

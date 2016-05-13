@@ -10,11 +10,10 @@
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
-require_once dirname(__FILE__) . '/Pdf.php';
- 
+
+namespace Intraface;
+
 /**
  * Creates a pdf of a debtor. The class implements the visitor pattern.
  *
@@ -24,8 +23,6 @@ require_once dirname(__FILE__) . '/Pdf.php';
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 class DebtorPdf
 {
@@ -50,7 +47,7 @@ class DebtorPdf
     function __construct($translation, $file = null)
     {
         if (!is_object($translation)) {
-            throw new Exception('translation is not an object');
+            throw new \Exception('translation is not an object');
         }
 
         $this->translation = $translation;
@@ -64,7 +61,7 @@ class DebtorPdf
      */
     protected function getDocument()
     {
-        $doc = new Intraface_Pdf();
+        $doc = new Pdf();
         return $doc;
     }
 
@@ -76,14 +73,14 @@ class DebtorPdf
      *
      * @return void
      */
-    function output($type = 'string', $filename = 'debtor.pdf')
+    function output($type = 'string', $filename = 'debtor.pdf', $turn_off_compression = false)
     {
         switch ($type) {
             case 'string':
-                return $this->doc->output();
+                return $this->doc->output($turn_off_compression);
             break;
             case 'file':
-                $data = $this->doc->output();
+                $data = $this->doc->output($turn_off_compression);
                 return $this->doc->writeDocument($data, $filename);
             break;
             case 'stream':
@@ -92,7 +89,7 @@ class DebtorPdf
             break;
         }
     }
-    
+
     /**
      * Add headline
      *
@@ -113,7 +110,7 @@ class DebtorPdf
         }
         */
     }
-    
+
     /**
      * Add data about the debtor
      *
@@ -162,7 +159,8 @@ class DebtorPdf
 
             $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
             $line = explode("\r\n", $intranet["address"]);
-            for ($i = 0; $i < count($line); $i++) {
+            $line_count = count($line);
+            for ($i = 0; $i < $line_count; $i++) {
                 $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
                 $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
                 if ($i == 2) {
@@ -176,7 +174,7 @@ class DebtorPdf
             $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["cvr"]);
             $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
 
-            if (!empty($intranet["contact_person"]) and $intranet['contact_person'] != $intranet["name"]) {
+            if (!empty($intranet["contact_person"]) && $intranet['contact_person'] != $intranet["name"]) {
                 $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "Kontakt:");
                 $this->doc->addText($this->doc->get('x') + 10 + 60, $this->doc->get('y'), $this->doc->get("font_size"), $intranet["contact_person"]);
                 $this->doc->setY('-'.$this->doc->get("font_spacing")); // $pointY -= $this->doc->get("font_spacing");
@@ -208,9 +206,9 @@ class DebtorPdf
     function addReceiver($contact)
     {
         $this->doc->setY('-5');
-        
+
         $this->box_top = $this->doc->get('y'); // $pointY;
-    
+
         $this->doc->setY('-' . $this->doc->get("font_spacing"));
         $this->doc->addText($this->doc->get('x') + self::BOX_WIDTH - 40, $this->doc->get('y') + 4, $this->doc->get("font_size") - 4, "Modtager");
         $this->doc->setY('-' . self::BOX_PADDING_TOP);
@@ -224,7 +222,8 @@ class DebtorPdf
         }
 
         $line = explode("\r\n", $contact["address"]);
-        for ($i = 0; $i < count($line); $i++) {
+        $line_count = count($line);
+        for ($i = 0; $i < $line_count; $i++) {
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
             $this->doc->setY('-'.$this->doc->get("font_spacing"));
 
@@ -277,11 +276,11 @@ class DebtorPdf
     function addPaymentCondition($payment_method, $parameter, $payment_info = array())
     {
         if (!is_array($parameter)) {
-            throw new Exception("The 3rd parameter to addPaymentCondition should be an array!");
+            throw new \Exception("The 3rd parameter to addPaymentCondition should be an array!");
         }
 
         if (!is_object($parameter['contact']->address)) {
-            throw new Exception("2nd parameter of array does not contain contact object with Address");
+            throw new \Exception("2nd parameter of array does not contain contact object with Address");
         }
 
         // adding payments
@@ -322,7 +321,7 @@ class DebtorPdf
             $this->addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info);
         }
     }
-    
+
     function addPaymentGiroaccount71($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
     {
         $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 2);
@@ -351,7 +350,7 @@ class DebtorPdf
 
         $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), "+71- ".str_repeat("0", 15 - strlen($parameter["girocode"])).$parameter["girocode"]." +".$payment_info["giro_account_number"]."-");
     }
-    
+
     function addPaymentGiroaccount($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
     {
         $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 3, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 3);
@@ -367,7 +366,8 @@ class DebtorPdf
         $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $parameter["contact"]->address->get("name"));
         $this->doc->setY('-'.$this->doc->get('font_spacing'));
         $line = explode("\r\n", $parameter["contact"]->address->get("address"));
-        for ($i = 0; $i < count($line); $i++) {
+        $line_count = count($line);
+        for ($i = 0; $i < $line_count; $i++) {
             $this->doc->addText($this->doc->get('x') + 10, $this->doc->get('y'), $this->doc->get("font_size"), $line[$i]);
             $this->doc->setY('-'.$this->doc->get('font_spacing'));
             if ($i == 2) {
@@ -407,7 +407,7 @@ class DebtorPdf
         $this_text = '+01-'.str_repeat(' ', 20).'+'.$payment_info['giro_account_number'].'-';
         $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get('font_size'), $this_text);
     }
-    
+
     function addPaymentBankTransfer($payment_line, $payment_left, $payment_right, $parameter, $payment_start, $amount, $payment_info)
     {
         $this->doc->rectangle($this->doc->get('x'), $this->doc->get('y') - $payment_line * 2, $this->doc->get("right_margin_position") - $this->doc->get("margin_left"), $payment_line * 2);
@@ -448,7 +448,7 @@ class DebtorPdf
          $this->doc->setY('-'.($payment_line - 12));
          $this->doc->addText($this->doc->get('x') + $payment_left + 10, $this->doc->get('y'), $this->doc->get("font_size"), $payment_info["bank_reg_number"] . "       " . $payment_info["bank_account_number"]);
     }
-    
+
     /**
      * Adds payments
      *
@@ -458,7 +458,7 @@ class DebtorPdf
      */
     function addPayments($payment = 0, $payment_online = 0, $amount = 0)
     {
-        if ($payment != 0 or $payment_online != 0) {
+        if ($payment != 0 || $payment_online != 0) {
             $this->doc->setY('-20');
 
             if ($payment != 0) {
@@ -547,7 +547,7 @@ class DebtorPdf
 
         $this->doc->line($this->doc->get("margin_left"), $this->doc->get('y'), $this->doc->get('right_margin_position'), $this->doc->get('y'));
     }
-    
+
     /**
      * Add product headlines to product table
      *
@@ -698,7 +698,7 @@ class DebtorPdf
         }
         $this->addTotalAmount($debtor);
     }
-    
+
     private function addTotalAmount($debtor)
     {
         $this->doc->setLineStyle(1);

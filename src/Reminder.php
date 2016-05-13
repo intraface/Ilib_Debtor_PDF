@@ -1,12 +1,17 @@
 <?php
+
+namespace Intraface;
+
 /**
  * Invoice
  *
- * @package Intraface_Invoice
+ * @category Ilib_Debtor_Reports
+ * @package  Intraface_Debtor
+ *
  * @author Sune Jensen <sj@sunet.dk>
  * @author Lars Olesen <lars@legestue.net>
  */
-class Intraface_modules_invoice_Pdf_Reminder extends Intraface_modules_debtor_Pdf
+class ReminderPdf extends DebtorPdf
 {
     function __construct($translation, $file = null)
     {
@@ -16,17 +21,17 @@ class Intraface_modules_invoice_Pdf_Reminder extends Intraface_modules_debtor_Pd
     function visit($reminder)
     {
         if ($reminder->get('id') == 0) {
-            throw new Exception("Reminder->pdf must be loaded to create a PDF");
+            throw new \Exception("Reminder->pdf must be loaded to create a PDF");
         }
 
         $this->doc = $this->getDocument();
 
-        if (!empty($this->file) and $this->file->get('id') > 0) {
+        if (!empty($this->file) && $this->file->get('id') > 0) {
             $this->doc->addHeader($this->file->get('file_uri_pdf'));
         }
 
         $contact = $reminder->contact->address->get();
-        if (isset($reminder->contact_person) and get_class($reminder->contact_person) == "contactperson") {
+        if (isset($reminder->contact_person) && get_class($reminder->contact_person) == "contactperson") {
             $contact["attention_to"] = $reminder->contact_person->get("name");
         }
         $contact['number'] = $reminder->contact->get('number');
