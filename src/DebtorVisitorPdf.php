@@ -18,10 +18,11 @@
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
-require_once dirname(__FILE__) . '/DebtorPdf.php';
+
+namespace Intraface;
+
+use Intraface\DebtorPdf;
 
 /**
  * Creates a pdf of a debtor. The class implements the visitor pattern.
@@ -38,8 +39,6 @@ require_once dirname(__FILE__) . '/DebtorPdf.php';
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 class DebtorVisitorPdf extends DebtorPdf
 {
@@ -69,7 +68,7 @@ class DebtorVisitorPdf extends DebtorPdf
         $this->doc = $this->getDocument();
 
         // Header.
-        if (!empty($this->file) and $this->file->get('id') > 0) {
+        if (!empty($this->file) && $this->file->get('id') > 0) {
             $this->doc->addHeader($this->file->get('file_uri_pdf'));
         }
 
@@ -79,7 +78,7 @@ class DebtorVisitorPdf extends DebtorPdf
             $contact["attention_to"] = $debtor->contact_person->get("name");
         }
         $contact['number'] = $debtor->contact->get('number');
-        
+
         $this->addReceiver($contact);
 
         // Sender.
@@ -113,13 +112,13 @@ class DebtorVisitorPdf extends DebtorPdf
         // Products.
         $this->addProductListHeadlines();
         $this->addProductsList($debtor, $debtor->getItems());
-        
+
         // Payment condition.
         if ($debtor->get("type") == "invoice" || $debtor->get("type") == "order") {
             $this->addPaymentConditionVisit($debtor, $onlinepayment);
         }
     }
-    
+
     function addPaymentConditionVisit($debtor, $onlinepayment)
     {
         $parameter = array(

@@ -1,33 +1,25 @@
 <?xml version="1.0"?>
 <!--suppress XmlUnboundNsPrefix -->
 <ruleset name="PHP-SDK">
- <description>The QuickPay ruleset based on the PSR-2 coding standard.</description>
+ <description>Coding standards based on the PSR-2 coding standard.</description>
  <rule ref="PSR2"/>
  <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
-  <severity>0</severity>
- </rule>
- <rule ref="Squiz.Classes.ValidClassName.NotCamelCaps">
-  <severity>0</severity>
+  <message>Cpdf is 3Party so do not require namespace here</message>
+  <exclude-pattern>*/src/Cpdf.php</exclude-pattern>
  </rule>
  <rule ref="Generic.Files.LineLength.TooLong">
   <severity>0</severity>
  </rule>
  <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
-  <severity>0</severity>
- </rule>
- <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
-  <severity>0</severity>
+  <exclude-pattern>*/src/Cpdf.php</exclude-pattern>
  </rule>
  <rule ref="PSR2.ControlStructures.SwitchDeclaration.TerminatingComment">
-  <severity>0</severity>
+  <exclude-pattern>*/src/Cpdf.php</exclude-pattern>
  </rule>
  <rule ref="Squiz.Scope.MethodScope.Missing">
   <severity>0</severity>
  </rule>
- <rule ref="PSR2.Methods.MethodDeclaration.Underscore">
-  <severity>0</severity>
- </rule>
  <rule ref="PEAR.Functions.ValidDefaultValue.NotAtEnd">
-  <severity>0</severity>
+  <exclude-pattern>*/src/Cpdf.php</exclude-pattern>
  </rule>
 </ruleset>

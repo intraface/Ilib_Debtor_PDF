@@ -16,7 +16,7 @@
  * @link      http://pdf-php.sf.net
  */
 
-class LegacyCpdf
+class Cpdf
 {
     /**
      * allow the programmer to output debug messages on serveral places

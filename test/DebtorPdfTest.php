@@ -1,5 +1,9 @@
 <?php
-class DebtorPdfTest extends PHPUnit_Framework_TestCase
+
+use Intraface\DebtorPdf;
+use Intraface\DebtorVisitorPdf;
+
+class DebtorPdfTest extends \PHPUnit_Framework_TestCase
 {
     protected $path_to_debtor;
 
@@ -67,6 +71,23 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         return $debtor;
     }
 
+    protected function assertGeneratedPdfHasCorrectLength($pdf, $length)
+    {
+        // As we cannot be certain that function_exists('gzcompress'), we turn off compression
+        $turn_off_compression = true;
+        // this is for comparing the files.
+        $pdf->output('file', $this->path_to_debtor, $turn_off_compression);
+        $expected = file_get_contents($this->path_to_expected_debtor, 1);
+        $actual = file_get_contents($this->path_to_debtor);
+        $this->assertEquals(strlen($expected), strlen($actual));
+
+        // This is for simply comparing the string.
+        /*
+        $content = $pdf->output('string', '', $turn_off_compression);
+        $this->assertEquals($length, strlen($content));
+        */
+    }
+
     /////////////////////////////////////////////////////////////////////////
 
     public function testConstruct()
@@ -80,11 +101,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $pdf = $this->createPdf();
         $debtor = $this->createDebtor();
         $pdf->visit($debtor);
-        $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents($this->path_to_expected_debtor, 1);
-        $actual = file_get_contents($this->path_to_debtor);
-
-        $this->assertEquals(strlen($expected), strlen($actual));
+        $this->assertGeneratedPdfHasCorrectLength($pdf, 10811);
     }
 
     public function testVisitWithPayment()
@@ -93,11 +110,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $debtor = $this->createDebtor();
         $debtor->values['payment_total'] = 2125;
         $pdf->visit($debtor);
-        $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents($this->path_to_expected_debtor, 1);
-        $actual = file_get_contents($this->path_to_debtor);
-
-        $this->assertEquals(strlen($expected), strlen($actual));
+        $this->assertGeneratedPdfHasCorrectLength($pdf, 9915);
     }
 
     public function testVisitWithLongProductText()
@@ -105,11 +118,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $pdf = $this->createPdf();
         $debtor = $this->createDebtorLongProductText();
         $pdf->visit($debtor);
-        $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents($this->path_to_expected_debtor, 1);
-        $actual = file_get_contents($this->path_to_debtor);
-
-        $this->assertEquals(strlen($expected), strlen($actual));
+        $this->assertGeneratedPdfHasCorrectLength($pdf, 11565);
     }
 
     public function testVisitWithBankTransferPayment()
@@ -117,11 +126,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $pdf = $this->createPdf();
         $debtor = $this->createDebtor(1);
         $pdf->visit($debtor);
-        $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents($this->path_to_expected_debtor, 1);
-        $actual = file_get_contents($this->path_to_debtor);
-
-        $this->assertEquals(strlen($expected), strlen($actual));
+        $this->assertGeneratedPdfHasCorrectLength($pdf, 10612);
     }
 
     public function testDebtorWithManyProducts()
@@ -129,11 +134,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $pdf = $this->createPdf();
         $debtor = $this->createDebtorWithManyProducts();
         $pdf->visit($debtor);
-        $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents($this->path_to_expected_debtor, 1);
-        $actual = file_get_contents($this->path_to_debtor);
-
-        $this->assertEquals(strlen($expected), strlen($actual));
+        $this->assertGeneratedPdfHasCorrectLength($pdf, 16980);
     }
 
     public function testDebtorNoAmount()
@@ -141,11 +142,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $pdf = $this->createPdf();
         $debtor = $this->createDebtorWithNoAmount();
         $pdf->visit($debtor);
-        $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents($this->path_to_expected_debtor, 1);
-        $actual = file_get_contents($this->path_to_debtor);
-
-        $this->assertEquals(strlen($expected), strlen($actual));
+        $this->assertGeneratedPdfHasCorrectLength($pdf, 8725);
     }
 
     public function testDebtorWithLongText()
@@ -153,16 +150,13 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $pdf = $this->createPdf();
         $debtor = $this->createDebtorWithLongMessage();
         $pdf->visit($debtor);
-        $pdf->output('file', $this->path_to_debtor);
-        $expected = file_get_contents($this->path_to_expected_debtor, 1);
-        $actual = file_get_contents($this->path_to_debtor);
-
-        $this->assertEquals(strlen($expected), strlen($actual));
+        $this->assertGeneratedPdfHasCorrectLength($pdf, 22980);
     }
 
     public function testVisitWithOnlinePayment()
     {
         $this->markTestSkipped('Not implemented properly yet');
+        /*
         $pdf = $this->createPdf();
         $debtor = $this->createDebtor();
         $debtor->values['payment_online'] = 2125;
@@ -172,6 +166,7 @@ class DebtorPdfTest extends PHPUnit_Framework_TestCase
         $actual = file_get_contents($this->path_to_debtor);
 
         $this->assertEquals(strlen($expected), strlen($actual));
+        */
     }
 
 }

@@ -8,11 +8,9 @@
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
 
-require_once dirname(__FILE__) . '/LegacyCpdf.php';
+namespace Intraface;
 
 /**
  * PDF maker for Intraface
@@ -23,10 +21,8 @@ require_once dirname(__FILE__) . '/LegacyCpdf.php';
  * @package  Intraface_Debtor
  * @author   Lars Olesen <lars@legestue.net>
  * @author   Sune Jensen <sj@sunet.dk>
- * @license  GNU General Public License <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link     http://github.com/intraface/Ilib_Debtor_Pdf
  */
-class Intraface_Pdf extends LegacyCpdf
+class Pdf extends \Cpdf
 {
     protected $value;
     protected $page;
@@ -65,7 +61,7 @@ class Intraface_Pdf extends LegacyCpdf
         // Table for the characters placements can be found here: http://www.fingertipsoft.com/3dkbd/ansitable.html
         // Table for their names is found here: http://www.gust.org.pl/fonty/qx-table2.htm
         // Notice that the placement of the characters are different in the two tables. Placement is correct in the first.
-        
+
         $diff = array(230 => 'ae',
                       198 => 'AE',
                       248 => 'oslash',
@@ -75,7 +71,7 @@ class Intraface_Pdf extends LegacyCpdf
 
         parent::selectFont('Helvetica.afm', array('differences' => $diff));
 
-        $this->_calculateDynamicValues();
+        $this->calculateDynamicValues();
     }
 
     /**
@@ -84,7 +80,7 @@ class Intraface_Pdf extends LegacyCpdf
      *
      * @return void
      */
-    private function _calculateDynamicValues()
+    private function calculateDynamicValues()
     {
         // Sets values based on the predefined values.
         $this->value['right_margin_position'] = $this->page_width - $this->value['margin_right']; // content_width from 0 to right margen
@@ -113,7 +109,7 @@ class Intraface_Pdf extends LegacyCpdf
         $this->value[$key] = $value;
         // Every time we change a fixed value we need to update the dynamic values
         if (in_array($key, array('margin_right', 'margin_left', 'margin_top', 'margin_bottom', 'font_size', 'font_padding_top', 'font_padding_bottom'))) {
-            $this->_calculateDynamicValues();
+            $this->calculateDynamicValues();
         }
     }
 
@@ -133,7 +129,7 @@ class Intraface_Pdf extends LegacyCpdf
         } elseif (is_string($value) && substr($value, 0, 1) == "-") {
             $this->value['x'] -= intval(substr($value, 1));
         } else {
-            throw new Exception('Ugyldig værdi i setX: '.$value);
+            throw new \Exception('Ugyldig værdi i setX: '.$value);
         }
     }
 
@@ -153,7 +149,7 @@ class Intraface_Pdf extends LegacyCpdf
         } elseif (is_string($value) && substr($value, 0, 1) == "-") {
             $this->value['y'] -= intval(substr($value, 1));
         } else {
-            throw new Exception("Ugyldig værdi i setY: ".$value);
+            throw new \Exception("Ugyldig værdi i setY: ".$value);
         }
     }
 
@@ -234,8 +230,8 @@ class Intraface_Pdf extends LegacyCpdf
     public function nextPage($sub_text = false)
     {
         $text = "<i>Fortsættes på næste side...</i>";
-        
-        if ($sub_text == true) {
+
+        if ($sub_text === true) {
             $this->addText($this->value['right_margin_position'] - $this->getTextWidth($this->value['font_size'], $text) - 30, $this->value["margin_bottom"] - $this->value['font_padding_top'] - $this->value['font_size'], $this->value['font_size'], $text);
         }
         parent::newPage();
